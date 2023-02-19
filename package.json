@@ -1,0 +1,33 @@
+{
+  "name": "compta",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "svelte-kit dev",
+    "build": "svelte-kit build",
+    "package": "svelte-kit package",
+    "preview": "svelte-kit preview",
+    "lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. .",
+    "format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. ."
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "next",
+    "@sveltejs/adapter-vercel": "^1.0.0-next.35",
+    "@sveltejs/kit": "next",
+    "autoprefixer": "^10.4.0",
+    "prettier": "^2.4.1",
+    "prettier-plugin-svelte": "^2.4.0",
+    "svelte": "^3.44.0",
+    "tailwindcss": "^3.0.1",
+    "workbox-precaching": "^6.5.4"
+  },
+  "type": "module",
+  "dependencies": {
+    "@tailwindcss/forms": "^0.4.0",
+    "chart.js": "^4.1.1",
+    "dexie": "^3.2.2",
+    "dotenv": "^10.0.0",
+    "minimist": ">=1.2.6",
+    "mongodb": "^4.2.2",
+    "svelte-chartjs": "^3.0.0"
+  }
+}
