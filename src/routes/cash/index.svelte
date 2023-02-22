@@ -224,95 +224,99 @@
     <h1 class="text-lg uppercase">Trésorerie</h1>
   </div>
   <div
-    class="grid grid-cols-5 gap-4 w-full md:w-2/3 border-solid hover:border-dotted border-2 rounded m-1 p-1 text-sm"
+    class="grid grid-cols-3 gap-1 md:gap-4 w-full md:w-2/3 border-solid hover:border-dotted border-2 rounded m-1 p-1 text-xs md:text-base"
   >
     <div class="text-center">
-      <p>Total banques perso</p>
+      <p>Banques perso</p>
       <p>{totalBankPerso.toLocaleString("fr")}</p>
-      <p>Dépenses mois</p>
-      <p>{totalPersoExpenses[currentMonth].toLocaleString("fr")}</p>
-      <p class={cssNeg}>Solde cash</p>
-      <p class={cssNeg}>{soldeCash.toLocaleString("fr")}</p>
-      <div>
-        <button
-          type="submit"
-          class="shadow bg-amber-400 text-xs hover:bg-amber-300 focus:shadow-outline focus:outline-none text-gray-700  py-1 px-4 ml-4 rounded"
-          on:click={saveData}>Enregistrer</button
-        >
-        <div class="ml-4">{statutEnregistrement}</div>
-      </div>
-    </div>
-    <div>
-      {#each banksPerso as b}
-        <div>
-          {b.name}
-          <input
-            type="text"
-            bind:value={b.amount}
-            on:change={salaryChanges}
-            class="text-xs text-right appearance-none border-2 border-gray-200 rounded w-full py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
-          />
-        </div>
-      {/each}
-    </div>
-    <div>
-      {#each currentSalaries as c}
-        <div>
-          Salaires
-          <input
-            type="text"
-            bind:value={c}
-            on:change={salaryChanges}
-            class="text-xs text-right appearance-none border-2 border-gray-200 rounded w-full py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
-          />
-        </div>
-      {/each}
-      <div>
-        <p>Total Salaires du mois</p>
-        <p class="text-right">
-          {totalSalaries[currentMonth].toLocaleString("fr")}
-        </p>
-      </div>
     </div>
     <div class="text-center">
-      <p>Dépenses Openfield</p>
+      <p>Dépenses mois</p>
+      <p>{totalPersoExpenses[currentMonth].toLocaleString("fr")}</p>
+    </div>
+    <div class="text-center">
+      <p class={cssNeg}>Solde cash</p>
+      <p class={cssNeg}>{soldeCash.toLocaleString("fr")}</p>
+    </div>
+
+    {#each banksPerso as b}
+      <div>
+        {b.name}
+        <input
+          type="text"
+          bind:value={b.amount}
+          on:change={salaryChanges}
+          class="text-xs text-right appearance-none border-2 border-gray-200 rounded w-full py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+        />
+      </div>
+    {/each}
+
+    <div />
+
+    {#each currentSalaries as c}
+      <div>
+        Salaires
+        <input
+          type="text"
+          bind:value={c}
+          on:change={salaryChanges}
+          class="text-xs text-right appearance-none border-2 border-gray-200 rounded w-full py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+        />
+      </div>
+    {/each}
+    <div class="text-center">
+      <p>Salaires du mois</p>
+      <p>
+        {totalSalaries[currentMonth].toLocaleString("fr")}
+      </p>
+    </div>
+    {#each banksOpenfield as b}
+      <div>
+        {b.name}
+        <input
+          type="text"
+          bind:value={b.amount}
+          class="text-xs text-right appearance-none border-2 border-gray-200 rounded w-full py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+        />
+      </div>
+    {/each}
+    <div class="text-center">
+      <p>Dépenses mois</p>
       <p>{totalOpenfieldExpenses[currentMonth].toLocaleString("fr")}</p>
+    </div>
+    <div class="text-center">
       <p class={cssOpenfieldNeg}>Solde cash</p>
       <p class={cssOpenfieldNeg}>{soldeOpenfield.toLocaleString("fr")}</p>
     </div>
-    <div>
-      {#each banksOpenfield as b}
-        <div>
-          {b.name}
-          <input
-            type="text"
-            bind:value={b.amount}
-            class="text-xs text-right appearance-none border-2 border-gray-200 rounded w-full py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
-          />
-        </div>
-      {/each}
+    <div class="mt-4">
+      <button
+        type="submit"
+        class="shadow bg-amber-400 text-xs hover:bg-amber-300 focus:shadow-outline focus:outline-none text-gray-700  py-1 px-4 ml-4 rounded"
+        on:click={saveData}>Enregistrer</button
+      >
     </div>
+    <div class="ml-4">{statutEnregistrement}</div>
   </div>
-  <div class="mt-5  w-full md:w-2/3">
+  <div class="mt-5  w-full md:w-2/3 text-xs md:text-base">
     <table>
       <tr>
         {#each months as m}
-          <td class="text-center text-xs">{m}</td>
+          <td class="text-center">{m}</td>
         {/each}
       </tr>
       <tr>
         {#each totalSalaries as s}
-          <td class="text-right py-1 px-1 text-xs">{s.toLocaleString("fr")}</td>
+          <td class="text-right py-1 px-1">{s.toLocaleString("fr")}</td>
         {/each}
       </tr>
       <tr>
         {#each totalPersoExpenses as s}
-          <td class="text-right py-1 px-1 text-xs">{s.toLocaleString("fr")}</td>
+          <td class="text-right py-1 px-1">{s.toLocaleString("fr")}</td>
         {/each}
       </tr>
       <tr>
         {#each totalOpenfieldExpenses as s}
-          <td class="text-right py-1 px-1 text-xs">{s.toLocaleString("fr")}</td>
+          <td class="text-right py-1 px-1">{s.toLocaleString("fr")}</td>
         {/each}
       </tr>
     </table>

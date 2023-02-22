@@ -53,10 +53,12 @@
   });
 
   function loadTables() {
-    for (var i = 0; i < 5; i++) {
-      years.push(currentYear + i);
+    if (years.length < 4) {
+      for (var i = 0; i < 5; i++) {
+        years.push(currentYear + i);
+      }
+      years = years;
     }
-    years = years;
 
     tableExpenses = [];
     totalExpenses = ["Total", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -153,7 +155,7 @@
     <h1 class="text-lg uppercase">Dépenses personnelles</h1>
   </div>
   <div
-    class="grid grid-cols-4 gap-5 w-full md:w-1/2 border-solid hover:border-dotted border-2 rounded m-1 p-1"
+    class="grid grid-cols-4 gap-1 md:gap-4 w-full md:w-1/2 border-solid hover:border-dotted border-2 rounded m-1 p-1 text-sm md:text-base"
   >
     {#each banks as b}
       <div>
@@ -161,7 +163,7 @@
         <input
           type="text"
           bind:value={b.amount}
-          class="text-xs text-right appearance-none border-2 border-gray-200 rounded w-full py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+          class="text-sm text-right appearance-none border-2 border-gray-200 rounded w-full py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
         />
       </div>
     {/each}
@@ -169,7 +171,7 @@
       Année<br />
       <select
         bind:value={currentYear}
-        class="appearance-none border-2 text-xs border-gray-200 rounded py-1 px-10 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+        class="appearance-none border-2 text-sm border-gray-200 rounded py-1 px-10 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
         on:change={loadTables}
       >
         {#each years as y}
@@ -183,8 +185,8 @@
       <br />
       <button
         type="submit"
-        class="shadow bg-amber-400 text-xs hover:bg-amber-300 focus:shadow-outline focus:outline-none text-gray-700  py-1 px-4 ml-4 rounded"
-        on:click={saveData}>Enregistrer</button
+        class="shadow bg-amber-400 text-sm hover:bg-amber-300 focus:shadow-outline focus:outline-none text-gray-700  py-1 px-4 ml-4 rounded"
+        on:click={saveData}>Save</button
       >
       <span class="ml-4 ">{statutEnregistrement}</span>
     </div>

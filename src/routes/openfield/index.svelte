@@ -71,10 +71,12 @@
   });
 
   function loadTables() {
-    for (var i = 0; i < 5; i++) {
-      years.push(currentYear + i);
+    if (years.length < 4) {
+      for (var i = 0; i < 5; i++) {
+        years.push(currentYear + i);
+      }
+      years = years;
     }
-    years = years;
     tableExpenses = [];
     tableInvoices = [];
     totalExpenses = ["Total", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -304,7 +306,7 @@
       <button
         type="submit"
         class="shadow bg-amber-400 text-xs hover:bg-amber-300 focus:shadow-outline focus:outline-none text-gray-700  py-1 px-4 ml-4 rounded"
-        on:click={saveData}>Enregistrer</button
+        on:click={saveData}>Save</button
       >
       <span class="ml-4 ">{statutEnregistrement}</span>
     </div>
