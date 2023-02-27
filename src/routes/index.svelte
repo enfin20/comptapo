@@ -62,36 +62,26 @@
   let totalBankPerso = 0;
 
   let invoices = [];
-  let totalInvoices = ["Facturation TTC"];
-  let totalAnnualInvoices = 0;
+  let totalPotentialInvoices = 0;
   let totalRealizedInvoices = 0;
   let currentCaObjective = 0;
 
   let persoExpenses = [];
-  let totalPersoExpenses = ["Perso dépenses"];
   let persoAnnualExpenses = [];
 
   let openfieldExpenses = [];
-  let totalOpenfieldExpenses = ["Openfield dépenses"];
   let openfieldAnnualExpenses = [];
 
-  let totalExpenses = ["Total dépenses"];
-
   let salaries = [];
-  let totalSalaries = ["Salaires"];
 
-  let openfieldOutput = ["Sortie Openfield"];
-
-  let cash = ["Solde trésorerie"];
   let cashPessimist = ["Tréso pessimiste"];
-  let nbMonthPessimist;
+  let monthPessimist;
 
   let datesGraph = [];
   let cashGraph = [];
 
-  let ir = ["Prévision IR"];
   let currentIrObjective = 0;
-  let totalIr = 0;
+  let totalPrevisionnelIr = 0;
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
@@ -155,51 +145,32 @@
     res = await fetch("/MDB/annualopenfield?year=" + currentYear);
     const aop = await res.json();
     openfieldAnnualExpenses = await aop.expenses;
-    console.info("openfieldAnnualExpenses", openfieldAnnualExpenses);
 
     res = await fetch("/MDB/invoices");
     const inv = await res.json();
     invoices = await inv.invoices;
 
+    // totalBank = Solde total
+    // totalBankPerso = Somme des banques perso
     totalBank = 0;
     totalBankPerso = 0;
-    totalPersoExpenses = ["Perso dépenses"];
-    totalOpenfieldExpenses = ["Openfield dépenses"];
-    totalInvoices = ["Facturation TTC"];
-    totalAnnualInvoices = 0;
-    totalRealizedInvoices = 0;
-    totalSalaries = ["Salaires"];
-    cash = ["Solde trésorerie"];
-    cashPessimist = ["Tréso pessimiste"];
-    nbMonthPessimist = "";
-    totalExpenses = ["Total dépenses"];
-    openfieldOutput = ["Sortie Openfield"];
-    ir = ["Prévision IR"];
-    datesGraph = [];
-    cashGraph = [];
-
     for (var i = 0; i < banks.length; i++) {
       totalBank = totalBank + banks[i].amount;
       if (banks[i].group === "Perso") {
         totalBankPerso = totalBankPerso + banks[i].amount;
       }
     }
-
-    let tempTotalPersoExpenses = 0;
-    let tempTotalOpenfieldExpenses = 0;
-    let tempTotalInvoices = 0;
-    let tempTotalSalaries = 0;
-    let tempIr = 0;
-    totalIr = 0;
-    let tempCash = totalBank;
+    // pour le graph
+    let tempCashGraph = totalBank;
     let tempCashPessimist = totalBank;
-    let tempMois;
-    let tempDateGraph = -1;
+
     //data pour les graphs
+    // categoryPersoExpensesLabel : pour l'affichage dans les graphes
     let categoryPersoExpensesLabel = [];
     for (var i = 0; i < categoryPersoExpenses.length; i++) {
       categoryPersoExpensesLabel.push(categoryPersoExpenses[i].name);
     }
+    // persoAnnualExpensesValue : pour l'affichage dans les graphes
     let persoAnnualExpensesValue = [];
     for (var i = 0; i < categoryPersoExpensesLabel.length; i++) {
       for (var j = 0; j < persoAnnualExpenses.length; j++) {
@@ -211,10 +182,12 @@
         }
       }
     }
+    // categoryOpenfieldExpensesLabel : pour l'affichage dans les graphes
     let categoryOpenfieldExpensesLabel = [];
     for (var i = 0; i < categoryOpenfieldExpenses.length; i++) {
       categoryOpenfieldExpensesLabel.push(categoryOpenfieldExpenses[i].name);
     }
+    // openfieldAnnualExpensesValue : pour l'affichage dans les graphes
     let openfieldAnnualExpensesValue = [];
     for (var i = 0; i < categoryOpenfieldExpensesLabel.length; i++) {
       for (var j = 0; j < openfieldAnnualExpenses.length; j++) {
@@ -228,8 +201,29 @@
       }
     }
 
+    totalPotentialInvoices = 0;
+    totalRealizedInvoices = 0;
+    // cashPessimist : permet de retrouver le premier mois négatif (monthPessimist)
+    cashPessimist = ["Tréso pessimiste"];
+    monthPessimist = "";
+    datesGraph = [];
+    cashGraph = [];
+
+    let tempTotalPersoExpenses = 0;
+    let tempTotalOpenfieldExpenses = 0;
+    let tempTotalInvoices = 0;
+    let tempTotalPaidInvoices = 0;
+    // permet de calculer IR prévisionnel
+    let tempTotalSalaries = 0;
+    let tempIr = 0;
+    totalPrevisionnelIr = 0;
+
+    // formattage des dates pour les graphes
+    let tempMois;
+    let tempDateGraph = -1;
     for (var i = currentYear; i < currentYear + 5; i++) {
       for (var j = 0; j <= 11; j++) {
+        // formattage des dates pour les graphes
         if (i === currentYear && j < currentMonth) {
         } else {
           tempDateGraph = tempDateGraph + 1;
@@ -239,16 +233,15 @@
           tempMois = "0".concat(j + 1);
         }
 
+        // somme des dépenses du mois en cours
         tempTotalPersoExpenses = 0;
-        tempTotalOpenfieldExpenses = 0;
-        tempTotalInvoices = 0;
-        tempTotalSalaries = 0;
         for (var k = 0; k < persoExpenses.length; k++) {
           if (persoExpenses[k].year === i && persoExpenses[k].month === j + 1) {
             tempTotalPersoExpenses =
               tempTotalPersoExpenses + persoExpenses[k].amount;
           }
         }
+        tempTotalOpenfieldExpenses = 0;
         for (var k = 0; k < openfieldExpenses.length; k++) {
           if (
             openfieldExpenses[k].year === i &&
@@ -258,24 +251,33 @@
               tempTotalOpenfieldExpenses + openfieldExpenses[k].amount;
           }
         }
+        tempTotalPaidInvoices = 0;
+        tempTotalInvoices = 0;
         for (var k = 0; k < invoices.length; k++) {
           if (
             invoices[k].paymentYear === i &&
-            invoices[k].paymentMonth === j + 1 &&
-            !invoices[k].paid
+            invoices[k].paymentMonth === j + 1
           ) {
-            tempTotalInvoices =
-              tempTotalInvoices +
-              invoices[k].days * invoices[k].dailyRate * 1.2;
+            if (!invoices[k].paid) {
+              tempTotalInvoices =
+                tempTotalInvoices +
+                invoices[k].days * invoices[k].dailyRate * 1.2;
+            } else {
+              tempTotalPaidInvoices =
+                tempTotalPaidInvoices +
+                invoices[k].days * invoices[k].dailyRate * 1.2;
+            }
           }
         }
+        // permet de calculer IR prévisionnel
+        tempTotalSalaries = 0;
         for (var k = 0; k < salaries.length; k++) {
           if (salaries[k].year === i && salaries[k].month === j + 1) {
             tempTotalSalaries = tempTotalSalaries + salaries[k].amount;
           }
         }
-        tempCash =
-          tempCash +
+        tempCashGraph =
+          tempCashGraph +
           tempTotalInvoices -
           tempTotalPersoExpenses -
           tempTotalOpenfieldExpenses;
@@ -295,16 +297,12 @@
             tempTotalOpenfieldExpenses;
         }
 
-        totalPersoExpenses.push(tempTotalPersoExpenses);
-        totalOpenfieldExpenses.push(tempTotalOpenfieldExpenses);
-        totalInvoices.push(tempTotalInvoices);
-        totalAnnualInvoices = totalAnnualInvoices + tempTotalInvoices / 1.2;
-        if (i === currentYear && j <= currentMonth + 1) {
-          totalRealizedInvoices =
-            totalRealizedInvoices + tempTotalInvoices / 1.2;
-        }
-        totalSalaries.push(tempTotalSalaries);
-        cash.push(tempCash);
+        totalPotentialInvoices =
+          totalPotentialInvoices +
+          (tempTotalPaidInvoices + tempTotalInvoices) / 1.2;
+        totalRealizedInvoices =
+          totalRealizedInvoices + tempTotalPaidInvoices / 1.2;
+
         cashPessimist.push(tempCashPessimist);
         dates.push(tempMois + "/" + i.toString().substring(2, 4));
         // pour le cashGraph, on ne prend que maintenant, 1 mois, 2 mois, 3 mois, 6 mois, 1 an, 2 ans, 3 ans, 4 ans, 5 ans
@@ -320,60 +318,49 @@
           tempDateGraph === 48 ||
           tempDateGraph === 60
         ) {
-          cashGraph.push(tempCash);
+          cashGraph.push(tempCashGraph);
           datesGraph.push(tempMois + "/" + i.toString().substring(2, 4));
         }
 
-        totalExpenses.push(tempTotalPersoExpenses + tempTotalOpenfieldExpenses);
+        // calcul de l'IR
         tempIr = 0;
         if (i === currentYear) {
           if (j < currentMonth) {
-            openfieldOutput.push(tempTotalSalaries);
             tempIr = tempTotalSalaries;
           } else if (j === currentMonth) {
-            openfieldOutput.push(
-              tempTotalSalaries - totalBankPerso + tempTotalPersoExpenses
-            );
             tempIr =
               tempTotalSalaries - totalBankPerso + tempTotalPersoExpenses;
-          } else {
-            openfieldOutput.push(0);
           }
-          ir.push(tempIr);
-          // prévision ir
+          // prévision IR
           if (tempTotalPersoExpenses > tempIr) {
-            totalIr = totalIr + tempTotalPersoExpenses;
+            totalPrevisionnelIr = totalPrevisionnelIr + tempTotalPersoExpenses;
           } else {
-            totalIr = totalIr + tempIr;
+            totalPrevisionnelIr = totalPrevisionnelIr + tempIr;
           }
-        } else {
-          openfieldOutput.push(0);
         }
       }
     }
     dates = dates;
-    totalPersoExpenses = totalPersoExpenses;
-    totalOpenfieldExpenses = totalOpenfieldExpenses;
-    totalInvoices = totalInvoices;
-    cash = cash;
     cashPessimist = cashPessimist;
     cashGraph = cashGraph;
     datesGraph = datesGraph;
 
+    // détermination du premier mois négatif de cash
     for (var i = 0; i < cashPessimist.length; i++) {
       if (cashPessimist[i] < 0) {
-        nbMonthPessimist = dates[i];
+        monthPessimist = dates[i];
         i = 1000;
       }
     }
 
+    // gestion des données pour les graphes
     let datasetIrObjective = [];
     datasetIrObjective.push({
       label: "En cours",
       backgroundColor: categoryTypesColor[1],
       borderColor: categoryTypesColor[1],
       borderRadius: 20,
-      data: [(totalIr / currentIrObjective) * 100],
+      data: [(totalPrevisionnelIr / currentIrObjective) * 100],
     });
     datasetIrObjective.push({
       label: "Objectif",
@@ -428,7 +415,7 @@
       backgroundColor: categoryTypesColor[1],
       borderColor: categoryTypesColor[1],
       borderRadius: 20,
-      data: [(totalAnnualInvoices / currentCaObjective) * 100],
+      data: [(totalPotentialInvoices / currentCaObjective) * 100],
     });
     datasetCaObjective.push({
       label: "Objectif",
@@ -573,7 +560,7 @@
         </div>
         <div>
           <p>IR prévisionnel</p>
-          <p>{totalIr.toLocaleString("fr")}</p>
+          <p>{totalPrevisionnelIr.toLocaleString("fr")}</p>
         </div>
       </div>
       <canvas bind:this={chartIrObjective} height="50px" />
@@ -584,7 +571,7 @@
         </div>
         <div>
           <p>CA potentiel</p>
-          <p>{totalAnnualInvoices.toLocaleString("fr")}</p>
+          <p>{totalPotentialInvoices.toLocaleString("fr")}</p>
         </div>
         <div>
           <p>CA réalisé</p>
@@ -601,7 +588,7 @@
         </div>
         <div>
           <p>Négative (pessimiste) en</p>
-          <p>{nbMonthPessimist}</p>
+          <p>{monthPessimist}</p>
         </div>
       </div>
       <canvas bind:this={chartCash} />
@@ -617,60 +604,5 @@
       </div>
     </div>
   </div>
-  <div class="hidden md:grid grid-cols-1 mt-6 w-full md:w-2/3 text-xs">
-    <!-- 
-    <table>
-      <tr>
-        {#each dates as d}
-          <td class="text-right py-1 px-1 ">{d}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each totalInvoices as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each totalPersoExpenses as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each totalOpenfieldExpenses as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each totalExpenses as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each cash as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each cashPessimist as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each totalSalaries as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each openfieldOutput as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each ir as s}
-          <td class="text-right py-1 px-1 ">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-    </table>
-    -->
-  </div>
+  <div class="hidden md:grid grid-cols-1 mt-6 w-full md:w-2/3 text-xs" />
 </div>
