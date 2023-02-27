@@ -259,9 +259,15 @@
             invoices[k].paymentMonth === j + 1
           ) {
             if (!invoices[k].paid) {
-              tempTotalInvoices =
-                tempTotalInvoices +
-                invoices[k].days * invoices[k].dailyRate * 1.2;
+              if (j - 1 === currentMonth && i <= currentYear) {
+                tempTotalPaidInvoices =
+                  tempTotalPaidInvoices +
+                  invoices[k].days * invoices[k].dailyRate * 1.2;
+              } else {
+                tempTotalInvoices =
+                  tempTotalInvoices +
+                  invoices[k].days * invoices[k].dailyRate * 1.2;
+              }
             } else {
               tempTotalPaidInvoices =
                 tempTotalPaidInvoices +
@@ -559,12 +565,12 @@
           <p>{currentIrObjective.toLocaleString("fr")}</p>
         </div>
         <div>
-          <p>IR prévisionnel</p>
+          <p>IR prév.</p>
           <p>{totalPrevisionnelIr.toLocaleString("fr")}</p>
         </div>
       </div>
       <canvas bind:this={chartIrObjective} height="50px" />
-      <div class="grid grid-cols-4 w-full text-center mt-10">
+      <div class="grid grid-cols-4 w-full text-center mt-2 md:mt-10">
         <div>
           <p>Objectif CA</p>
           <p>{currentCaObjective.toLocaleString("fr")}</p>
