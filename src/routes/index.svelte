@@ -60,6 +60,7 @@
   let banks = [];
   let totalBank = 0;
   let totalBankPerso = 0;
+  let totalBankOpenfield = 0;
 
   let invoices = [];
   let totalPotentialInvoices = 0;
@@ -85,6 +86,15 @@
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
+
+  // données pour la synthèse du cash
+  let totalPersoExpensesCurrentMonth = 0;
+  let totalOpenfieldExpensesCurrentMonth = 0;
+  let totalSalariesCurrentMonth = 0;
+  let cssNeg = "text-red-400";
+  let cssOpenfieldNeg = "text-red-400";
+  let soldeCash = 0;
+  let soldeOpenfield = 0;
 
   onMount(async (promise) => {
     loadTables();
@@ -158,6 +168,8 @@
       totalBank = totalBank + banks[i].amount;
       if (banks[i].group === "Perso") {
         totalBankPerso = totalBankPerso + banks[i].amount;
+      } else {
+        totalBankOpenfield = totalBankPerso + banks[i].amount;
       }
     }
     // pour le graph
@@ -296,6 +308,12 @@
             tempTotalInvoices -
             tempTotalPersoExpenses -
             tempTotalOpenfieldExpenses;
+          // données pour la synthèse du cash
+          if (i === currentYear && j === currentMonth) {
+            totalPersoExpensesCurrentMonth = tempTotalPersoExpenses;
+            totalSalariesCurrentMonth = tempTotalSalaries;
+            totalOpenfieldExpensesCurrentMonth = tempTotalOpenfieldExpenses;
+          }
         } else {
           tempCashPessimist =
             tempCashPessimist -
@@ -345,6 +363,21 @@
           }
         }
       }
+    }
+    soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
+    cssNeg = "";
+    if (soldeCash < 0) {
+      cssNeg = "text-red-400";
+    }
+    soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
+    cssNeg = "";
+    if (soldeCash < 0) {
+      cssNeg = "text-red-400";
+    }
+    soldeOpenfield = totalBankOpenfield - totalOpenfieldExpensesCurrentMonth;
+    cssOpenfieldNeg = "";
+    if (soldeOpenfield < 0) {
+      cssOpenfieldNeg = "text-red-400";
     }
     dates = dates;
     cashPessimist = cashPessimist;
@@ -599,6 +632,61 @@
       </div>
       <canvas bind:this={chartCash} />
     </div>
+
+    <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
+      <div class="text-center mb-5">Synthèse trésorerie mois en court</div>
+      <div class="grid grid-cols-3 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
+        <div class="text-center">
+          <p>Banques perso</p>
+          <p>{totalBankPerso.toLocaleString("fr")}</p>
+        </div>
+
+        <div class="text-center">
+          <p>Dépenses mois</p>
+          <p>{totalPersoExpensesCurrentMonth.toLocaleString("fr")}</p>
+        </div>
+
+        <div class="text-center">
+          <p class={cssNeg}>Solde cash</p>
+          <p class={cssNeg}>{soldeCash.toLocaleString("fr")}</p>
+        </div>
+
+        {#each banks as b}
+          {#if b.group === "Perso"}
+            <div class="text-center">
+              <p>
+                {b.name}
+              </p>
+              <p>{b.amount.toLocaleString("fr")}</p>
+            </div>
+          {/if}
+        {/each}
+        <div class="text-center">
+          <p>Salaires du mois</p>
+          <p>
+            {totalSalariesCurrentMonth.toLocaleString("fr")}
+          </p>
+        </div>
+
+        {#each banks as b}
+          {#if b.group === "Openfield"}
+            <div class="text-center">
+              <p>
+                {b.name}
+              </p>
+              <p>{b.amount.toLocaleString("fr")}</p>
+            </div>{/if}
+        {/each}
+        <div class="text-center">
+          <p>Dépenses mois</p>
+          <p>{totalOpenfieldExpensesCurrentMonth.toLocaleString("fr")}</p>
+        </div>
+        <div class="text-center">
+          <p class={cssOpenfieldNeg}>Solde cash</p>
+          <p class={cssOpenfieldNeg}>{soldeOpenfield.toLocaleString("fr")}</p>
+        </div>
+      </div>
+    </div>
     <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
       <div class="grid grid-cols-2 w-full text-center">
         <div>
@@ -610,5 +698,4 @@
       </div>
     </div>
   </div>
-  <div class="hidden md:grid grid-cols-1 mt-6 w-full md:w-2/3 text-xs" />
 </div>
