@@ -634,7 +634,7 @@
     </div>
 
     <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-      <div class="text-center mb-5">Synthèse trésorerie mois en court</div>
+      <div class="text-center mb-5">Synthèse trésorerie mois actuel</div>
       <div class="grid grid-cols-3 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
         <div class="text-center">
           <p>Banques perso</p>
