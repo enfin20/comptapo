@@ -116,6 +116,495 @@
   });
 
   async function loadTables() {
+    Promise.all([
+      fetch("/MDB/irobjectives?year=" + currentYear),
+      fetch("/MDB/caobjectives?year=" + currentYear),
+      fetch("/MDB/categories?group=Openfield"),
+      fetch("/MDB/categories?group=Perso"),
+      fetch("/MDB/expenses"),
+      fetch("/MDB/annualexpenses?year=" + currentYear),
+      fetch("/MDB/salaries"),
+      fetch("/MDB/banks?group=all"),
+      fetch("/MDB/openfield"),
+      fetch("/MDB/annualopenfield?year=" + currentYear),
+      fetch("/MDB/invoices"),
+    ])
+      .then(
+        async ([
+          res1,
+          res2,
+          res3,
+          res4,
+          res5,
+          res6,
+          res7,
+          res8,
+          res9,
+          res10,
+          res11,
+        ]) => {
+          const iro = await res1.json();
+          currentIrObjective = await iro.ir[0].amount;
+          const cao = await res2.json();
+          currentCaObjective = await cao.ca[0].amount;
+          const cat = await res3.json();
+          categoryOpenfieldExpenses = await cat.categories;
+          const ca = await res4.json();
+          categoryPersoExpenses = await ca.categories;
+          const exp = await res5.json();
+          persoExpenses = await exp.expenses;
+          const aexp = await res6.json();
+          persoAnnualExpenses = await aexp.expenses;
+          const sa = await res7.json();
+          salaries = await sa.salaries;
+          const b = await res8.json();
+          banks = await b.banks;
+          const op = await res9.json();
+          openfieldExpenses = await op.openfield;
+          const aop = await res10.json();
+          openfieldAnnualExpenses = await aop.expenses;
+          const inv = await res11.json();
+          invoices = await inv.invoices;
+        }
+      )
+      .then(() => {
+        // totalBank = Solde total
+        // totalBankPerso = Somme des banques perso
+        totalBank = 0;
+        totalBankPerso = 0;
+        for (var i = 0; i < banks.length; i++) {
+          totalBank = totalBank + banks[i].amount;
+          if (banks[i].group === "Perso") {
+            totalBankPerso = totalBankPerso + banks[i].amount;
+          } else {
+            totalBankOpenfield = totalBankPerso + banks[i].amount;
+          }
+        }
+        // pour le graph
+        let tempCashGraph = totalBank;
+        let tempCashPessimist = totalBank;
+
+        //data pour les graphs
+        // categoryPersoExpensesLabel : pour l'affichage dans les graphes
+        let categoryPersoExpensesLabel = [];
+        for (var i = 0; i < categoryPersoExpenses.length; i++) {
+          categoryPersoExpensesLabel.push(categoryPersoExpenses[i].name);
+        }
+        // persoAnnualExpensesValue : pour l'affichage dans les graphes
+        let persoAnnualExpensesValue = [];
+        for (var i = 0; i < categoryPersoExpensesLabel.length; i++) {
+          for (var j = 0; j < persoAnnualExpenses.length; j++) {
+            if (
+              persoAnnualExpenses[j].year === currentYear &&
+              categoryPersoExpensesLabel[i] === persoAnnualExpenses[j].category
+            ) {
+              persoAnnualExpensesValue.push(persoAnnualExpenses[j].amount);
+            }
+          }
+        }
+        // categoryOpenfieldExpensesLabel : pour l'affichage dans les graphes
+        let categoryOpenfieldExpensesLabel = [];
+        for (var i = 0; i < categoryOpenfieldExpenses.length; i++) {
+          categoryOpenfieldExpensesLabel.push(
+            categoryOpenfieldExpenses[i].name
+          );
+        }
+        // openfieldAnnualExpensesValue : pour l'affichage dans les graphes
+        let openfieldAnnualExpensesValue = [];
+        for (var i = 0; i < categoryOpenfieldExpensesLabel.length; i++) {
+          for (var j = 0; j < openfieldAnnualExpenses.length; j++) {
+            if (
+              openfieldAnnualExpenses[j].year === currentYear &&
+              categoryOpenfieldExpensesLabel[i] ===
+                openfieldAnnualExpenses[j].category
+            ) {
+              openfieldAnnualExpensesValue.push(
+                openfieldAnnualExpenses[j].amount
+              );
+            }
+          }
+        }
+
+        totalPotentialInvoices = 0;
+        totalRealizedInvoices = 0;
+        // cashPessimist : permet de retrouver le premier mois négatif (monthPessimist)
+        cashPessimist = ["Tréso pessimiste"];
+        monthPessimist = "";
+        datesGraph = [];
+        cashGraph = [];
+
+        let tempTotalPersoExpenses = 0;
+        let tempTotalOpenfieldExpenses = 0;
+        let tempTotalInvoices = 0;
+        let tempTotalPaidInvoices = 0;
+        // permet de calculer IR prévisionnel
+        let tempTotalSalaries = 0;
+        let tempIr = 0;
+        totalPrevisionnelIr = 0;
+
+        // formattage des dates pour les graphes
+        let tempMois;
+        let tempDateGraph = -1;
+        for (var i = currentYear; i < currentYear + 5; i++) {
+          for (var j = 0; j <= 11; j++) {
+            // formattage des dates pour les graphes
+            if (i === currentYear && j < currentMonth) {
+            } else {
+              tempDateGraph = tempDateGraph + 1;
+            }
+            tempMois = j + 1;
+            if (j < 9) {
+              tempMois = "0".concat(j + 1);
+            }
+
+            // somme des dépenses du mois en cours
+            tempTotalPersoExpenses = 0;
+            for (var k = 0; k < persoExpenses.length; k++) {
+              if (
+                persoExpenses[k].year === i &&
+                persoExpenses[k].month === j + 1
+              ) {
+                tempTotalPersoExpenses =
+                  tempTotalPersoExpenses + persoExpenses[k].amount;
+              }
+            }
+            tempTotalOpenfieldExpenses = 0;
+            for (var k = 0; k < openfieldExpenses.length; k++) {
+              if (
+                openfieldExpenses[k].year === i &&
+                openfieldExpenses[k].month === j + 1
+              ) {
+                tempTotalOpenfieldExpenses =
+                  tempTotalOpenfieldExpenses + openfieldExpenses[k].amount;
+              }
+            }
+            tempTotalPaidInvoices = 0;
+            tempTotalInvoices = 0;
+            for (var k = 0; k < invoices.length; k++) {
+              if (
+                invoices[k].paymentYear === i &&
+                invoices[k].paymentMonth === j + 1
+              ) {
+                if (!invoices[k].paid) {
+                  if (j - 1 === currentMonth && i <= currentYear) {
+                    tempTotalPaidInvoices =
+                      tempTotalPaidInvoices +
+                      invoices[k].days * invoices[k].dailyRate * 1.2;
+                  } else {
+                    tempTotalInvoices =
+                      tempTotalInvoices +
+                      invoices[k].days * invoices[k].dailyRate * 1.2;
+                  }
+                } else {
+                  tempTotalPaidInvoices =
+                    tempTotalPaidInvoices +
+                    invoices[k].days * invoices[k].dailyRate * 1.2;
+                }
+              }
+            }
+            // permet de calculer IR prévisionnel
+            tempTotalSalaries = 0;
+            for (var k = 0; k < salaries.length; k++) {
+              if (salaries[k].year === i && salaries[k].month === j + 1) {
+                tempTotalSalaries = tempTotalSalaries + salaries[k].amount;
+              }
+            }
+            tempCashGraph =
+              tempCashGraph +
+              tempTotalInvoices -
+              tempTotalPersoExpenses -
+              tempTotalOpenfieldExpenses;
+            if (
+              i === currentYear &&
+              (j === currentMonth || j === currentMonth + 1)
+            ) {
+              tempCashPessimist =
+                tempCashPessimist +
+                tempTotalInvoices -
+                tempTotalPersoExpenses -
+                tempTotalOpenfieldExpenses;
+              // données pour la synthèse du cash
+              if (i === currentYear && j === currentMonth) {
+                totalPersoExpensesCurrentMonth = tempTotalPersoExpenses;
+                totalSalariesCurrentMonth = tempTotalSalaries;
+                totalOpenfieldExpensesCurrentMonth = tempTotalOpenfieldExpenses;
+              }
+            } else {
+              tempCashPessimist =
+                tempCashPessimist -
+                tempTotalPersoExpenses -
+                tempTotalOpenfieldExpenses;
+            }
+
+            totalPotentialInvoices =
+              totalPotentialInvoices +
+              (tempTotalPaidInvoices + tempTotalInvoices) / 1.2;
+            totalRealizedInvoices =
+              totalRealizedInvoices + tempTotalPaidInvoices / 1.2;
+
+            cashPessimist.push(tempCashPessimist);
+            dates.push(tempMois + "/" + i.toString().substring(2, 4));
+            // pour le cashGraph, on ne prend que maintenant, 1 mois, 2 mois, 3 mois, 6 mois, 1 an, 2 ans, 3 ans, 4 ans, 5 ans
+            if (
+              tempDateGraph === 0 ||
+              tempDateGraph === 1 ||
+              tempDateGraph === 2 ||
+              tempDateGraph === 3 ||
+              tempDateGraph === 6 ||
+              tempDateGraph === 12 ||
+              tempDateGraph === 24 ||
+              tempDateGraph === 36 ||
+              tempDateGraph === 48 ||
+              tempDateGraph === 60
+            ) {
+              cashGraph.push(tempCashGraph);
+              datesGraph.push(tempMois + "/" + i.toString().substring(2, 4));
+            }
+
+            // calcul de l'IR
+            tempIr = 0;
+            if (i === currentYear) {
+              if (j < currentMonth) {
+                tempIr = tempTotalSalaries;
+              } else if (j === currentMonth) {
+                tempIr =
+                  tempTotalSalaries - totalBankPerso + tempTotalPersoExpenses;
+              }
+              // prévision IR
+              if (tempTotalPersoExpenses > tempIr) {
+                totalPrevisionnelIr =
+                  totalPrevisionnelIr + tempTotalPersoExpenses;
+              } else {
+                totalPrevisionnelIr = totalPrevisionnelIr + tempIr;
+              }
+            }
+          }
+        }
+        soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
+        cssNeg = "";
+        if (soldeCash < 0) {
+          cssNeg = "text-red-400";
+        }
+        soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
+        cssNeg = "";
+        if (soldeCash < 0) {
+          cssNeg = "text-red-400";
+        }
+        soldeOpenfield =
+          totalBankOpenfield - totalOpenfieldExpensesCurrentMonth;
+        cssOpenfieldNeg = "";
+        if (soldeOpenfield < 0) {
+          cssOpenfieldNeg = "text-red-400";
+        }
+        dates = dates;
+        cashPessimist = cashPessimist;
+        cashGraph = cashGraph;
+        datesGraph = datesGraph;
+
+        // détermination du premier mois négatif de cash
+        for (var i = 0; i < cashPessimist.length; i++) {
+          if (cashPessimist[i] < 0) {
+            monthPessimist = dates[i];
+            i = 1000;
+          }
+        }
+
+        // gestion des données pour les graphes
+        let datasetIrObjective = [];
+        datasetIrObjective.push({
+          label: "En cours",
+          backgroundColor: categoryTypesColor[1],
+          borderColor: categoryTypesColor[1],
+          borderRadius: 20,
+          data: [(totalPrevisionnelIr / currentIrObjective) * 100],
+        });
+        datasetIrObjective.push({
+          label: "Objectif",
+          backgroundColor: categoryTypesColor[2],
+          borderColor: categoryTypesColor[2],
+          borderRadius: 20,
+          data: [100],
+        });
+        chartIrObjectiveData.destroy();
+        chartIrObjectiveData = new chartjs(ctxIrObjective, {
+          type: "bar",
+          data: {
+            labels: ["IR"],
+            datasets: datasetIrObjective,
+          },
+          options: {
+            responsive: true,
+            indexAxis: "y",
+            scales: {
+              x: {
+                stacked: false,
+
+                ticks: {
+                  min: 0,
+                  max: 130,
+                  stepSize: 10,
+                },
+              },
+              y: {
+                stacked: true,
+                display: false,
+              },
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+          },
+        });
+
+        let datasetCaObjective = [];
+        datasetCaObjective.push({
+          label: "Réalisé",
+          backgroundColor: categoryTypesColor[4],
+          borderColor: categoryTypesColor[4],
+          borderRadius: 20,
+          data: [(totalRealizedInvoices / currentCaObjective) * 100],
+        });
+        datasetCaObjective.push({
+          label: "Potentiel",
+          backgroundColor: categoryTypesColor[1],
+          borderColor: categoryTypesColor[1],
+          borderRadius: 20,
+          data: [(totalPotentialInvoices / currentCaObjective) * 100],
+        });
+        datasetCaObjective.push({
+          label: "Objectif",
+          backgroundColor: categoryTypesColor[2],
+          borderColor: categoryTypesColor[2],
+          borderRadius: 20,
+          data: [100],
+        });
+        chartCaObjectiveData.destroy();
+        chartCaObjectiveData = new chartjs(ctxCaObjective, {
+          type: "bar",
+          data: {
+            labels: ["CA"],
+            datasets: datasetCaObjective,
+          },
+          options: {
+            responsive: true,
+            indexAxis: "y",
+            scales: {
+              x: {
+                stacked: false,
+
+                ticks: {
+                  min: 0,
+                  max: 130,
+                  stepSize: 10,
+                },
+              },
+              y: {
+                stacked: true,
+                display: false,
+              },
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+          },
+        });
+
+        chartCashData.destroy();
+        chartCashData = new chartjs(ctxCash, {
+          type: "line",
+          data: {
+            labels: datesGraph,
+            datasets: [
+              {
+                label: "Tréso",
+                data: cashGraph,
+                fill: {
+                  target: "origin",
+                  above: "rgba(11, 149, 100, 0.08)",
+                  below: "rgba(218, 96, 96, 0.08)",
+                },
+                borderColor: categoryTypesColor[1],
+              },
+            ],
+          },
+          options: {
+            tension: 0.3,
+            cubicInterpolationMode: "monotone",
+            borderDash: [20, 10, 60, 10],
+            pointBorderColor: "#E64A19",
+            pointBackgroundColor: categoryTypesColor[1],
+            pointRadius: 5,
+            pointHoverRadius: 10,
+            pointHitRadius: 30,
+            pointBorderWidth: 2,
+            pointStyle: "rectRounded",
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+          },
+        });
+
+        chartPersoExpensesData.destroy();
+        chartPersoExpensesData = new chartjs(ctxPersoExpenses, {
+          type: "doughnut",
+          data: {
+            labels: categoryPersoExpensesLabel,
+            datasets: [
+              {
+                label: "",
+                data: persoAnnualExpensesValue,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+              title: {
+                display: true,
+                text: "Dépenses personnelles",
+              },
+            },
+            plugins: { legend: { labels: { boxWidth: 15 } } },
+          },
+        });
+
+        chartOpenfieldExpensesData.destroy();
+        chartOpenfieldExpensesData = new chartjs(ctxOpenfieldExpenses, {
+          type: "doughnut",
+          data: {
+            labels: categoryOpenfieldExpensesLabel,
+            datasets: [
+              {
+                label: "",
+                data: openfieldAnnualExpensesValue,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+              title: {
+                display: true,
+                text: "Dépenses openfield",
+              },
+            },
+            plugins: { legend: { labels: { boxWidth: 15 } } },
+          },
+        });
+      });
+    /*
     let res = await fetch("/MDB/irobjectives?year=" + currentYear);
     const iro = await res.json();
     currentIrObjective = await iro.ir[0].amount;
@@ -159,433 +648,7 @@
     res = await fetch("/MDB/invoices");
     const inv = await res.json();
     invoices = await inv.invoices;
-
-    // totalBank = Solde total
-    // totalBankPerso = Somme des banques perso
-    totalBank = 0;
-    totalBankPerso = 0;
-    for (var i = 0; i < banks.length; i++) {
-      totalBank = totalBank + banks[i].amount;
-      if (banks[i].group === "Perso") {
-        totalBankPerso = totalBankPerso + banks[i].amount;
-      } else {
-        totalBankOpenfield = totalBankPerso + banks[i].amount;
-      }
-    }
-    // pour le graph
-    let tempCashGraph = totalBank;
-    let tempCashPessimist = totalBank;
-
-    //data pour les graphs
-    // categoryPersoExpensesLabel : pour l'affichage dans les graphes
-    let categoryPersoExpensesLabel = [];
-    for (var i = 0; i < categoryPersoExpenses.length; i++) {
-      categoryPersoExpensesLabel.push(categoryPersoExpenses[i].name);
-    }
-    // persoAnnualExpensesValue : pour l'affichage dans les graphes
-    let persoAnnualExpensesValue = [];
-    for (var i = 0; i < categoryPersoExpensesLabel.length; i++) {
-      for (var j = 0; j < persoAnnualExpenses.length; j++) {
-        if (
-          persoAnnualExpenses[j].year === currentYear &&
-          categoryPersoExpensesLabel[i] === persoAnnualExpenses[j].category
-        ) {
-          persoAnnualExpensesValue.push(persoAnnualExpenses[j].amount);
-        }
-      }
-    }
-    // categoryOpenfieldExpensesLabel : pour l'affichage dans les graphes
-    let categoryOpenfieldExpensesLabel = [];
-    for (var i = 0; i < categoryOpenfieldExpenses.length; i++) {
-      categoryOpenfieldExpensesLabel.push(categoryOpenfieldExpenses[i].name);
-    }
-    // openfieldAnnualExpensesValue : pour l'affichage dans les graphes
-    let openfieldAnnualExpensesValue = [];
-    for (var i = 0; i < categoryOpenfieldExpensesLabel.length; i++) {
-      for (var j = 0; j < openfieldAnnualExpenses.length; j++) {
-        if (
-          openfieldAnnualExpenses[j].year === currentYear &&
-          categoryOpenfieldExpensesLabel[i] ===
-            openfieldAnnualExpenses[j].category
-        ) {
-          openfieldAnnualExpensesValue.push(openfieldAnnualExpenses[j].amount);
-        }
-      }
-    }
-
-    totalPotentialInvoices = 0;
-    totalRealizedInvoices = 0;
-    // cashPessimist : permet de retrouver le premier mois négatif (monthPessimist)
-    cashPessimist = ["Tréso pessimiste"];
-    monthPessimist = "";
-    datesGraph = [];
-    cashGraph = [];
-
-    let tempTotalPersoExpenses = 0;
-    let tempTotalOpenfieldExpenses = 0;
-    let tempTotalInvoices = 0;
-    let tempTotalPaidInvoices = 0;
-    // permet de calculer IR prévisionnel
-    let tempTotalSalaries = 0;
-    let tempIr = 0;
-    totalPrevisionnelIr = 0;
-
-    // formattage des dates pour les graphes
-    let tempMois;
-    let tempDateGraph = -1;
-    for (var i = currentYear; i < currentYear + 5; i++) {
-      for (var j = 0; j <= 11; j++) {
-        // formattage des dates pour les graphes
-        if (i === currentYear && j < currentMonth) {
-        } else {
-          tempDateGraph = tempDateGraph + 1;
-        }
-        tempMois = j + 1;
-        if (j < 9) {
-          tempMois = "0".concat(j + 1);
-        }
-
-        // somme des dépenses du mois en cours
-        tempTotalPersoExpenses = 0;
-        for (var k = 0; k < persoExpenses.length; k++) {
-          if (persoExpenses[k].year === i && persoExpenses[k].month === j + 1) {
-            tempTotalPersoExpenses =
-              tempTotalPersoExpenses + persoExpenses[k].amount;
-          }
-        }
-        tempTotalOpenfieldExpenses = 0;
-        for (var k = 0; k < openfieldExpenses.length; k++) {
-          if (
-            openfieldExpenses[k].year === i &&
-            openfieldExpenses[k].month === j + 1
-          ) {
-            tempTotalOpenfieldExpenses =
-              tempTotalOpenfieldExpenses + openfieldExpenses[k].amount;
-          }
-        }
-        tempTotalPaidInvoices = 0;
-        tempTotalInvoices = 0;
-        for (var k = 0; k < invoices.length; k++) {
-          if (
-            invoices[k].paymentYear === i &&
-            invoices[k].paymentMonth === j + 1
-          ) {
-            if (!invoices[k].paid) {
-              if (j - 1 === currentMonth && i <= currentYear) {
-                tempTotalPaidInvoices =
-                  tempTotalPaidInvoices +
-                  invoices[k].days * invoices[k].dailyRate * 1.2;
-              } else {
-                tempTotalInvoices =
-                  tempTotalInvoices +
-                  invoices[k].days * invoices[k].dailyRate * 1.2;
-              }
-            } else {
-              tempTotalPaidInvoices =
-                tempTotalPaidInvoices +
-                invoices[k].days * invoices[k].dailyRate * 1.2;
-            }
-          }
-        }
-        // permet de calculer IR prévisionnel
-        tempTotalSalaries = 0;
-        for (var k = 0; k < salaries.length; k++) {
-          if (salaries[k].year === i && salaries[k].month === j + 1) {
-            tempTotalSalaries = tempTotalSalaries + salaries[k].amount;
-          }
-        }
-        tempCashGraph =
-          tempCashGraph +
-          tempTotalInvoices -
-          tempTotalPersoExpenses -
-          tempTotalOpenfieldExpenses;
-        if (
-          i === currentYear &&
-          (j === currentMonth || j === currentMonth + 1)
-        ) {
-          tempCashPessimist =
-            tempCashPessimist +
-            tempTotalInvoices -
-            tempTotalPersoExpenses -
-            tempTotalOpenfieldExpenses;
-          // données pour la synthèse du cash
-          if (i === currentYear && j === currentMonth) {
-            totalPersoExpensesCurrentMonth = tempTotalPersoExpenses;
-            totalSalariesCurrentMonth = tempTotalSalaries;
-            totalOpenfieldExpensesCurrentMonth = tempTotalOpenfieldExpenses;
-          }
-        } else {
-          tempCashPessimist =
-            tempCashPessimist -
-            tempTotalPersoExpenses -
-            tempTotalOpenfieldExpenses;
-        }
-
-        totalPotentialInvoices =
-          totalPotentialInvoices +
-          (tempTotalPaidInvoices + tempTotalInvoices) / 1.2;
-        totalRealizedInvoices =
-          totalRealizedInvoices + tempTotalPaidInvoices / 1.2;
-
-        cashPessimist.push(tempCashPessimist);
-        dates.push(tempMois + "/" + i.toString().substring(2, 4));
-        // pour le cashGraph, on ne prend que maintenant, 1 mois, 2 mois, 3 mois, 6 mois, 1 an, 2 ans, 3 ans, 4 ans, 5 ans
-        if (
-          tempDateGraph === 0 ||
-          tempDateGraph === 1 ||
-          tempDateGraph === 2 ||
-          tempDateGraph === 3 ||
-          tempDateGraph === 6 ||
-          tempDateGraph === 12 ||
-          tempDateGraph === 24 ||
-          tempDateGraph === 36 ||
-          tempDateGraph === 48 ||
-          tempDateGraph === 60
-        ) {
-          cashGraph.push(tempCashGraph);
-          datesGraph.push(tempMois + "/" + i.toString().substring(2, 4));
-        }
-
-        // calcul de l'IR
-        tempIr = 0;
-        if (i === currentYear) {
-          if (j < currentMonth) {
-            tempIr = tempTotalSalaries;
-          } else if (j === currentMonth) {
-            tempIr =
-              tempTotalSalaries - totalBankPerso + tempTotalPersoExpenses;
-          }
-          // prévision IR
-          if (tempTotalPersoExpenses > tempIr) {
-            totalPrevisionnelIr = totalPrevisionnelIr + tempTotalPersoExpenses;
-          } else {
-            totalPrevisionnelIr = totalPrevisionnelIr + tempIr;
-          }
-        }
-      }
-    }
-    soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
-    cssNeg = "";
-    if (soldeCash < 0) {
-      cssNeg = "text-red-400";
-    }
-    soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
-    cssNeg = "";
-    if (soldeCash < 0) {
-      cssNeg = "text-red-400";
-    }
-    soldeOpenfield = totalBankOpenfield - totalOpenfieldExpensesCurrentMonth;
-    cssOpenfieldNeg = "";
-    if (soldeOpenfield < 0) {
-      cssOpenfieldNeg = "text-red-400";
-    }
-    dates = dates;
-    cashPessimist = cashPessimist;
-    cashGraph = cashGraph;
-    datesGraph = datesGraph;
-
-    // détermination du premier mois négatif de cash
-    for (var i = 0; i < cashPessimist.length; i++) {
-      if (cashPessimist[i] < 0) {
-        monthPessimist = dates[i];
-        i = 1000;
-      }
-    }
-
-    // gestion des données pour les graphes
-    let datasetIrObjective = [];
-    datasetIrObjective.push({
-      label: "En cours",
-      backgroundColor: categoryTypesColor[1],
-      borderColor: categoryTypesColor[1],
-      borderRadius: 20,
-      data: [(totalPrevisionnelIr / currentIrObjective) * 100],
-    });
-    datasetIrObjective.push({
-      label: "Objectif",
-      backgroundColor: categoryTypesColor[2],
-      borderColor: categoryTypesColor[2],
-      borderRadius: 20,
-      data: [100],
-    });
-    chartIrObjectiveData.destroy();
-    chartIrObjectiveData = new chartjs(ctxIrObjective, {
-      type: "bar",
-      data: {
-        labels: ["IR"],
-        datasets: datasetIrObjective,
-      },
-      options: {
-        responsive: true,
-        indexAxis: "y",
-        scales: {
-          x: {
-            stacked: false,
-
-            ticks: {
-              min: 0,
-              max: 130,
-              stepSize: 10,
-            },
-          },
-          y: {
-            stacked: true,
-            display: false,
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-
-    let datasetCaObjective = [];
-    datasetCaObjective.push({
-      label: "Réalisé",
-      backgroundColor: categoryTypesColor[4],
-      borderColor: categoryTypesColor[4],
-      borderRadius: 20,
-      data: [(totalRealizedInvoices / currentCaObjective) * 100],
-    });
-    datasetCaObjective.push({
-      label: "Potentiel",
-      backgroundColor: categoryTypesColor[1],
-      borderColor: categoryTypesColor[1],
-      borderRadius: 20,
-      data: [(totalPotentialInvoices / currentCaObjective) * 100],
-    });
-    datasetCaObjective.push({
-      label: "Objectif",
-      backgroundColor: categoryTypesColor[2],
-      borderColor: categoryTypesColor[2],
-      borderRadius: 20,
-      data: [100],
-    });
-    chartCaObjectiveData.destroy();
-    chartCaObjectiveData = new chartjs(ctxCaObjective, {
-      type: "bar",
-      data: {
-        labels: ["CA"],
-        datasets: datasetCaObjective,
-      },
-      options: {
-        responsive: true,
-        indexAxis: "y",
-        scales: {
-          x: {
-            stacked: false,
-
-            ticks: {
-              min: 0,
-              max: 130,
-              stepSize: 10,
-            },
-          },
-          y: {
-            stacked: true,
-            display: false,
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-
-    chartCashData.destroy();
-    chartCashData = new chartjs(ctxCash, {
-      type: "line",
-      data: {
-        labels: datesGraph,
-        datasets: [
-          {
-            label: "Tréso",
-            data: cashGraph,
-            fill: {
-              target: "origin",
-              above: "rgba(11, 149, 100, 0.08)",
-              below: "rgba(218, 96, 96, 0.08)",
-            },
-            borderColor: categoryTypesColor[1],
-          },
-        ],
-      },
-      options: {
-        tension: 0.3,
-        cubicInterpolationMode: "monotone",
-        borderDash: [20, 10, 60, 10],
-        pointBorderColor: "#E64A19",
-        pointBackgroundColor: categoryTypesColor[1],
-        pointRadius: 5,
-        pointHoverRadius: 10,
-        pointHitRadius: 30,
-        pointBorderWidth: 2,
-        pointStyle: "rectRounded",
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-
-    chartPersoExpensesData.destroy();
-    chartPersoExpensesData = new chartjs(ctxPersoExpenses, {
-      type: "doughnut",
-      data: {
-        labels: categoryPersoExpensesLabel,
-        datasets: [
-          {
-            label: "",
-            data: persoAnnualExpensesValue,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: "bottom",
-          },
-          title: {
-            display: true,
-            text: "Dépenses personnelles",
-          },
-        },
-        plugins: { legend: { labels: { boxWidth: 15 } } },
-      },
-    });
-
-    chartOpenfieldExpensesData.destroy();
-    chartOpenfieldExpensesData = new chartjs(ctxOpenfieldExpenses, {
-      type: "doughnut",
-      data: {
-        labels: categoryOpenfieldExpensesLabel,
-        datasets: [
-          {
-            label: "",
-            data: openfieldAnnualExpensesValue,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: "bottom",
-          },
-          title: {
-            display: true,
-            text: "Dépenses openfield",
-          },
-        },
-        plugins: { legend: { labels: { boxWidth: 15 } } },
-      },
-    });
+*/
   }
 </script>
 

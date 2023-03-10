@@ -33,23 +33,25 @@
   let currentYear = new Date().getFullYear();
 
   onMount(async (promise) => {
-    let res = await fetch("/MDB/categories?group=Perso");
-    const cat = await res.json();
-    categoryExpenses = await cat.categories;
-
-    res = await fetch("/MDB/expenses");
-    const ope = await res.json();
-    expenses = await ope.expenses;
-
-    res = await fetch("/MDB/banks?group=Perso");
-    const b = await res.json();
-    banks = await b.banks;
-    console.info("banks :", banks);
-    for (var i = 0; i < banks.length; i++) {
-      banks[i].previousValue = banks[i].value;
-    }
-
-    loadTables();
+    Promise.all([
+      fetch("/MDB/categories?group=Perso"),
+      fetch("/MDB/expenses"),
+      fetch("/MDB/banks?group=Perso"),
+    ])
+      .then(async ([res1, res2, res3]) => {
+        const cat = await res1.json();
+        categoryExpenses = await cat.categories;
+        const ope = await res2.json();
+        expenses = await ope.expenses;
+        const b = await res3.json();
+        banks = await b.banks;
+      })
+      .then(() => {
+        for (var i = 0; i < banks.length; i++) {
+          banks[i].previousValue = banks[i].value;
+        }
+        loadTables();
+      });
   });
 
   function loadTables() {

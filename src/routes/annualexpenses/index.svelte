@@ -22,23 +22,25 @@
   let currentYear = new Date().getFullYear();
 
   onMount(async (promise) => {
-    let res = await fetch("/MDB/categories?group=Openfield");
-    const cat = await res.json();
-    categoryOpenfieldExpenses = await cat.categories;
-
-    res = await fetch("/MDB/categories?group=Perso");
-    const ca = await res.json();
-    categoryPersoExpenses = await ca.categories;
-
-    res = await fetch("/MDB/annualopenfield");
-    const ope = await res.json();
-    openfieldExpenses = await ope.expenses;
-
-    res = await fetch("/MDB/annualexpenses");
-    const exp = await res.json();
-    persoExpenses = await exp.expenses;
-
-    loadTables();
+    Promise.all([
+      fetch("/MDB/categories?group=Openfield"),
+      fetch("/MDB/categories?group=Perso"),
+      fetch("/MDB/annualopenfield"),
+      fetch("/MDB/annualexpenses"),
+    ])
+      .then(async ([res1, res2, res3, res4]) => {
+        const cat = await res1.json();
+        categoryOpenfieldExpenses = await cat.categories;
+        const ca = await res2.json();
+        categoryPersoExpenses = await ca.categories;
+        const ope = await res3.json();
+        openfieldExpenses = await ope.expenses;
+        const exp = await res4.json();
+        persoExpenses = await exp.expenses;
+      })
+      .then(() => {
+        loadTables();
+      });
   });
 
   function loadTables() {

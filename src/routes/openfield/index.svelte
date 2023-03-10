@@ -46,28 +46,28 @@
   let currentYear = new Date().getFullYear();
 
   onMount(async (promise) => {
-    let res = await fetch("/MDB/categories?group=Openfield");
-    const cat = await res.json();
-    categoryExpenses = await cat.categories;
-
-    res = await fetch("/MDB/openfield");
-    const ope = await res.json();
-    expenses = await ope.openfield;
-
-    res = await fetch("/MDB/invoices");
-    const inv = await res.json();
-    invoices = await inv.invoices;
-    console.info("invoices :", invoices);
-
-    res = await fetch("/MDB/banks?group=Openfield");
-    const b = await res.json();
-    banks = await b.banks;
-    console.info("banks :", banks);
-    for (var i = 0; i < banks.length; i++) {
-      banks[i].previousValue = banks[i].value;
-    }
-
-    loadTables();
+    Promise.all([
+      fetch("/MDB/categories?group=Openfield"),
+      fetch("/MDB/openfield"),
+      fetch("/MDB/invoices"),
+      fetch("/MDB/banks?group=Openfield"),
+    ])
+      .then(async ([res1, res2, res3, res4]) => {
+        const cat = await res1.json();
+        categoryExpenses = await cat.categories;
+        const ope = await res2.json();
+        expenses = await ope.openfield;
+        const inv = await res3.json();
+        invoices = await inv.invoices;
+        const b = await res4.json();
+        banks = await b.banks;
+      })
+      .then(() => {
+        for (var i = 0; i < banks.length; i++) {
+          banks[i].previousValue = banks[i].value;
+        }
+        loadTables();
+      });
   });
 
   function loadTables() {

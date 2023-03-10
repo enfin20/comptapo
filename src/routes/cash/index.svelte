@@ -74,22 +74,25 @@
     "DEC",
   ];
   onMount(async (promise) => {
-    let res = await fetch("/MDB/expenses");
-    const exp = await res.json();
-    persoExpenses = await exp.expenses;
-
-    res = await fetch("/MDB/salaries");
-    const sa = await res.json();
-    salaries = await sa.salaries;
-
-    res = await fetch("/MDB/banks?group=all");
-    const b = await res.json();
-    banks = await b.banks;
-
-    res = await fetch("/MDB/openfield");
-    const op = await res.json();
-    openfieldExpenses = await op.openfield;
-    loadTables();
+    Promise.all([
+      fetch("/MDB/expenses"),
+      fetch("/MDB/salaries"),
+      fetch("/MDB/banks?group=all"),
+      fetch("/MDB/openfield"),
+    ])
+      .then(async ([res1, res2, res3, res4]) => {
+        const exp = await res1.json();
+        persoExpenses = await exp.expenses;
+        const sa = await res2.json();
+        salaries = await sa.salaries;
+        const b = await res3.json();
+        banks = await b.banks;
+        const op = await res4.json();
+        openfieldExpenses = await op.openfield;
+      })
+      .then(() => {
+        loadTables();
+      });
   });
 
   function loadTables() {
