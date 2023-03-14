@@ -63,8 +63,8 @@
   let totalBankOpenfield = 0;
 
   let invoices = [];
-  let totalPotentialInvoices = 0;
-  let totalRealizedInvoices = 0;
+  let totalPotentialInvoices = 0; // somme des factures de l'année
+  let totalRealizedInvoices = 0; // somme des factures de l'année avant le mois en cours
   let currentCaObjective = 0;
 
   let persoExpenses = [];
@@ -75,8 +75,9 @@
 
   let salaries = [];
 
+  // Pessimist: on en compte pas les factures à venir
   let cashPessimist = ["Tréso pessimiste"];
-  let monthPessimist;
+  let monthPessimist; // solde bank + factures mois en cours - dépenses à venir
 
   let datesGraph = [];
   let cashGraph = [];
@@ -226,8 +227,9 @@
         }
 
         totalPotentialInvoices = 0;
-        totalRealizedInvoices = 0;
         // cashPessimist : permet de retrouver le premier mois négatif (monthPessimist)
+        // solde bank + factures mois en cours - dépenses à venir
+        totalRealizedInvoices = 0;
         cashPessimist = ["Tréso pessimiste"];
         monthPessimist = "";
         datesGraph = [];
@@ -235,8 +237,14 @@
 
         let tempTotalPersoExpenses = 0;
         let tempTotalOpenfieldExpenses = 0;
+        // somme de toutes les factures existantes à venir
         let tempTotalInvoices = 0;
+        // somme de toutes les factures payées existantes à venir
         let tempTotalPaidInvoices = 0;
+        // somme de toutes les factures de l'année  à venir
+        let tempTotalCurrentYearInvoices = 0;
+        // somme de toutes les factures de l'année payées ou en cours à venir
+        let tempCurrentYearTotalPaidInvoices = 0;
         // permet de calculer IR prévisionnel
         let tempTotalSalaries = 0;
         let tempIr = 0;
@@ -245,6 +253,7 @@
         // formattage des dates pour les graphes
         let tempMois;
         let tempDateGraph = -1;
+
         for (var i = currentYear; i < currentYear + 5; i++) {
           for (var j = 0; j <= 11; j++) {
             // formattage des dates pour les graphes
@@ -268,6 +277,7 @@
                   tempTotalPersoExpenses + persoExpenses[k].amount;
               }
             }
+
             tempTotalOpenfieldExpenses = 0;
             for (var k = 0; k < openfieldExpenses.length; k++) {
               if (
@@ -278,30 +288,7 @@
                   tempTotalOpenfieldExpenses + openfieldExpenses[k].amount;
               }
             }
-            tempTotalPaidInvoices = 0;
-            tempTotalInvoices = 0;
-            for (var k = 0; k < invoices.length; k++) {
-              if (
-                invoices[k].paymentYear === i &&
-                invoices[k].paymentMonth === j + 1
-              ) {
-                if (!invoices[k].paid) {
-                  if (j - 1 === currentMonth && i <= currentYear) {
-                    tempTotalPaidInvoices =
-                      tempTotalPaidInvoices +
-                      invoices[k].days * invoices[k].dailyRate * 1.2;
-                  } else {
-                    tempTotalInvoices =
-                      tempTotalInvoices +
-                      invoices[k].days * invoices[k].dailyRate * 1.2;
-                  }
-                } else {
-                  tempTotalPaidInvoices =
-                    tempTotalPaidInvoices +
-                    invoices[k].days * invoices[k].dailyRate * 1.2;
-                }
-              }
-            }
+
             // permet de calculer IR prévisionnel
             tempTotalSalaries = 0;
             for (var k = 0; k < salaries.length; k++) {
@@ -309,38 +296,99 @@
                 tempTotalSalaries = tempTotalSalaries + salaries[k].amount;
               }
             }
+
+            tempTotalInvoices = 0;
+            for (var k = 0; k < invoices.length; k++) {
+              if (i === currentYear && invoices[k].year === i) {
+                // année en cours
+                if (j <= currentMonth && invoices[k].month - 1 === j) {
+                  tempCurrentYearTotalPaidInvoices =
+                    tempCurrentYearTotalPaidInvoices +
+                    invoices[k].days * invoices[k].dailyRate;
+                } else {
+                  if (invoices[k].month - 1 === j) {
+                    tempTotalCurrentYearInvoices =
+                      tempTotalCurrentYearInvoices +
+                      invoices[k].days * invoices[k].dailyRate;
+                  }
+                }
+              }
+              if (i === currentYear && invoices[k].paymentYear === i) {
+                // année en cours
+                if (j <= currentMonth && invoices[k].paymentMonth - 1 === j) {
+                  // mois déjà passés
+                  // on ne comptabilise pas les factures pour le graph si payées
+                  if (invoices[k].paid) {
+                    tempTotalInvoices = 0;
+                  } else {
+                    // sinon, on les comptabilise
+                    tempTotalInvoices =
+                      tempTotalInvoices +
+                      invoices[k].days * invoices[k].dailyRate * 1.2;
+                  }
+                } else {
+                  {
+                    // mois suivants de l'année en cours
+                    // on comptabilise les factures pour le graph
+                    if (invoices[k].paymentMonth - 1 === j) {
+                      tempTotalInvoices =
+                        tempTotalInvoices +
+                        invoices[k].days * invoices[k].dailyRate * 1.2;
+                    }
+                  }
+                }
+              } else {
+                // années suivantes
+                // on comptabilise les factures pour le graph
+                if (
+                  invoices[k].paymentYear === i &&
+                  invoices[k].paymentMonth - 1 === j
+                ) {
+                  tempTotalInvoices =
+                    tempTotalInvoices +
+                    invoices[k].days * invoices[k].dailyRate * 1.2;
+                }
+              }
+            }
+            /*
+            console.log("***************");
+            console.info("Annee Mois", i + " " + j);
+            console.info("tempCashGraph", tempCashGraph);
+            console.info("tempTotalInvoices", tempTotalInvoices);
+            console.info("tempTotalPersoExpenses", -tempTotalPersoExpenses);
+            console.info(
+              "tempTotalOpenfieldExpenses",
+              -tempTotalOpenfieldExpenses
+            );
+            */
             tempCashGraph =
               tempCashGraph +
               tempTotalInvoices -
               tempTotalPersoExpenses -
               tempTotalOpenfieldExpenses;
+            if (i === currentYear && j === currentMonth) {
+              totalPersoExpensesCurrentMonth = tempTotalPersoExpenses;
+              totalSalariesCurrentMonth = tempTotalSalaries;
+              totalOpenfieldExpensesCurrentMonth = tempTotalOpenfieldExpenses;
+            }
             if (
               i === currentYear &&
-              (j === currentMonth || j === currentMonth + 1)
+              (j - 1 === currentMonth || j === currentMonth)
             ) {
+              // on tient compte des factures non encore encaissées
+              //              console.info("tempTotalInvoices Pessimistic", tempTotalInvoices);
               tempCashPessimist =
                 tempCashPessimist +
                 tempTotalInvoices -
                 tempTotalPersoExpenses -
                 tempTotalOpenfieldExpenses;
               // données pour la synthèse du cash
-              if (i === currentYear && j === currentMonth) {
-                totalPersoExpensesCurrentMonth = tempTotalPersoExpenses;
-                totalSalariesCurrentMonth = tempTotalSalaries;
-                totalOpenfieldExpensesCurrentMonth = tempTotalOpenfieldExpenses;
-              }
             } else {
               tempCashPessimist =
                 tempCashPessimist -
                 tempTotalPersoExpenses -
                 tempTotalOpenfieldExpenses;
             }
-
-            totalPotentialInvoices =
-              totalPotentialInvoices +
-              (tempTotalPaidInvoices + tempTotalInvoices) / 1.2;
-            totalRealizedInvoices =
-              totalRealizedInvoices + tempTotalPaidInvoices / 1.2;
 
             cashPessimist.push(tempCashPessimist);
             dates.push(tempMois + "/" + i.toString().substring(2, 4));
@@ -380,6 +428,9 @@
             }
           }
         }
+        totalPotentialInvoices =
+          tempTotalCurrentYearInvoices + tempCurrentYearTotalPaidInvoices;
+        totalRealizedInvoices = tempCurrentYearTotalPaidInvoices;
         soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
         cssNeg = "";
         if (soldeCash < 0) {
@@ -604,80 +655,36 @@
           },
         });
       });
-    /*
-    let res = await fetch("/MDB/irobjectives?year=" + currentYear);
-    const iro = await res.json();
-    currentIrObjective = await iro.ir[0].amount;
-
-    res = await fetch("/MDB/caobjectives?year=" + currentYear);
-    const cao = await res.json();
-    currentCaObjective = await cao.ca[0].amount;
-
-    res = await fetch("/MDB/categories?group=Openfield");
-    const cat = await res.json();
-    categoryOpenfieldExpenses = await cat.categories;
-
-    res = await fetch("/MDB/categories?group=Perso");
-    const ca = await res.json();
-    categoryPersoExpenses = await ca.categories;
-
-    res = await fetch("/MDB/expenses");
-    const exp = await res.json();
-    persoExpenses = await exp.expenses;
-
-    res = await fetch("/MDB/annualexpenses?year=" + currentYear);
-    const aexp = await res.json();
-    persoAnnualExpenses = await aexp.expenses;
-
-    res = await fetch("/MDB/salaries");
-    const sa = await res.json();
-    salaries = await sa.salaries;
-
-    res = await fetch("/MDB/banks?group=all");
-    const b = await res.json();
-    banks = await b.banks;
-
-    res = await fetch("/MDB/openfield");
-    const op = await res.json();
-    openfieldExpenses = await op.openfield;
-
-    res = await fetch("/MDB/annualopenfield?year=" + currentYear);
-    const aop = await res.json();
-    openfieldAnnualExpenses = await aop.expenses;
-
-    res = await fetch("/MDB/invoices");
-    const inv = await res.json();
-    invoices = await inv.invoices;
-*/
   }
 </script>
 
 <div class="grid grid-cols-1 w-full">
   <div class="grid grid-cols-1 md:grid-cols-2 w-full">
     <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-      <div class="grid grid-cols-4 w-full text-center">
-        <div>
-          <p>Objectif IR</p>
-          <p>{currentIrObjective.toLocaleString("fr")}</p>
-        </div>
+      <div class="grid grid-cols-3 w-full text-center">
         <div>
           <p>IR prév.</p>
           <p>{totalPrevisionnelIr.toLocaleString("fr")}</p>
         </div>
+        <div />
+        <div>
+          <p>Objectif IR</p>
+          <p>{currentIrObjective.toLocaleString("fr")}</p>
+        </div>
       </div>
       <canvas bind:this={chartIrObjective} height="50px" />
-      <div class="grid grid-cols-4 w-full text-center mt-2 md:mt-10">
+      <div class="grid grid-cols-3 w-full text-center mt-2 md:mt-10">
         <div>
-          <p>Objectif CA</p>
-          <p>{currentCaObjective.toLocaleString("fr")}</p>
+          <p>CA réalisé</p>
+          <p>{totalRealizedInvoices.toLocaleString("fr")}</p>
         </div>
         <div>
           <p>CA potentiel</p>
           <p>{totalPotentialInvoices.toLocaleString("fr")}</p>
         </div>
         <div>
-          <p>CA réalisé</p>
-          <p>{totalRealizedInvoices.toLocaleString("fr")}</p>
+          <p>Objectif CA</p>
+          <p>{currentCaObjective.toLocaleString("fr")}</p>
         </div>
       </div>
       <canvas bind:this={chartCaObjective} height="50px" />

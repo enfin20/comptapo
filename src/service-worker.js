@@ -1,7 +1,7 @@
 import { build, files } from "$service-worker";
 // Create a unique cache name for this deployment
 
-const CACHE = `cache-compta-v1`;
+const CACHE = `cache-compta-v2`;
 const ASSETS = [
   ...build, // the app itself
   ...files, // everything in `static`
