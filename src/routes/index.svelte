@@ -74,6 +74,7 @@
   let openfieldAnnualExpenses = [];
 
   let salaries = [];
+  let totalSalaries = 0;
 
   // Pessimist: on en compte pas les factures à venir
   let cashPessimist = ["Tréso pessimiste"];
@@ -296,6 +297,7 @@
                 tempTotalSalaries = tempTotalSalaries + salaries[k].amount;
               }
             }
+            totalSalaries = totalSalaries + tempTotalSalaries;
 
             tempTotalInvoices = 0;
             for (var k = 0; k < invoices.length; k++) {
@@ -459,16 +461,40 @@
             i = 1000;
           }
         }
-
+        totalSalaries = (totalSalaries / (currentMonth + 1)) * 12;
         // gestion des données pour les graphes
         let datasetIrObjective = [];
-        datasetIrObjective.push({
-          label: "En cours",
-          backgroundColor: categoryTypesColor[1],
-          borderColor: categoryTypesColor[1],
-          borderRadius: 20,
-          data: [(totalPrevisionnelIr / currentIrObjective) * 100],
-        });
+        if (totalSalaries > totalPrevisionnelIr) {
+          datasetIrObjective.push({
+            label: "En cours",
+            backgroundColor: categoryTypesColor[1],
+            borderColor: categoryTypesColor[1],
+            borderRadius: 20,
+            data: [(totalPrevisionnelIr / currentIrObjective) * 100],
+          });
+          datasetIrObjective.push({
+            label: "Salaires prév.",
+            backgroundColor: categoryTypesColor[4],
+            borderColor: categoryTypesColor[4],
+            borderRadius: 20,
+            data: [(totalSalaries / currentIrObjective) * 100],
+          });
+        } else {
+          datasetIrObjective.push({
+            label: "Salaires prév.",
+            backgroundColor: categoryTypesColor[4],
+            borderColor: categoryTypesColor[4],
+            borderRadius: 20,
+            data: [(totalSalaries / currentIrObjective) * 100],
+          });
+          datasetIrObjective.push({
+            label: "En cours",
+            backgroundColor: categoryTypesColor[1],
+            borderColor: categoryTypesColor[1],
+            borderRadius: 20,
+            data: [(totalPrevisionnelIr / currentIrObjective) * 100],
+          });
+        }
         datasetIrObjective.push({
           label: "Objectif",
           backgroundColor: categoryTypesColor[2],
@@ -476,6 +502,7 @@
           borderRadius: 20,
           data: [100],
         });
+
         chartIrObjectiveData.destroy();
         chartIrObjectiveData = new chartjs(ctxIrObjective, {
           type: "bar",
@@ -663,10 +690,14 @@
     <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
       <div class="grid grid-cols-3 w-full text-center">
         <div>
+          <p>Salaire prév.</p>
+          <p>{totalSalaries.toLocaleString("fr")}</p>
+        </div>
+        <div>
           <p>IR prév.</p>
           <p>{totalPrevisionnelIr.toLocaleString("fr")}</p>
         </div>
-        <div />
+
         <div>
           <p>Objectif IR</p>
           <p>{currentIrObjective.toLocaleString("fr")}</p>
