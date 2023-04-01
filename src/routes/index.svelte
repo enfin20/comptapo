@@ -82,6 +82,7 @@
 
   let datesGraph = [];
   let cashGraph = [];
+  let cashPessimistGraph = [];
 
   let currentIrObjective = 0;
   let totalPrevisionnelIr = 0;
@@ -235,6 +236,7 @@
         monthPessimist = "";
         datesGraph = [];
         cashGraph = [];
+        cashPessimistGraph = [];
 
         let tempTotalPersoExpenses = 0;
         let tempTotalOpenfieldExpenses = 0;
@@ -408,6 +410,7 @@
               tempDateGraph === 60
             ) {
               cashGraph.push(tempCashGraph);
+              cashPessimistGraph.push(tempCashPessimist);
               datesGraph.push(tempMois + "/" + i.toString().substring(2, 4));
             }
 
@@ -452,6 +455,7 @@
         dates = dates;
         cashPessimist = cashPessimist;
         cashGraph = cashGraph;
+        cashPessimistGraph = cashPessimistGraph;
         datesGraph = datesGraph;
 
         // détermination du premier mois négatif de cash
@@ -598,14 +602,28 @@
             labels: datesGraph,
             datasets: [
               {
-                label: "Tréso",
+                label: "Tréso prévisionnelle",
                 data: cashGraph,
                 fill: {
                   target: "origin",
                   above: "rgba(11, 149, 100, 0.08)",
+                  below: "rgba(255, 255, 255, 0.08)",
+                },
+                borderColor: categoryTypesColor[4],
+                pointBackgroundColor: categoryTypesColor[4],
+                pointBorderColor: categoryTypesColor[4],
+              },
+              {
+                label: "Tréso pessimiste",
+                data: cashPessimistGraph,
+                fill: {
+                  target: "origin",
+                  above: "rgba(255, 255, 255, 0.08)",
                   below: "rgba(218, 96, 96, 0.08)",
                 },
                 borderColor: categoryTypesColor[1],
+                pointBackgroundColor: categoryTypesColor[1],
+                pointBorderColor: categoryTypesColor[1],
               },
             ],
           },
@@ -613,8 +631,6 @@
             tension: 0.3,
             cubicInterpolationMode: "monotone",
             borderDash: [20, 10, 60, 10],
-            pointBorderColor: "#E64A19",
-            pointBackgroundColor: categoryTypesColor[1],
             pointRadius: 5,
             pointHoverRadius: 10,
             pointHitRadius: 30,
