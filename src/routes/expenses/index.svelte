@@ -193,7 +193,8 @@
       <span class="ml-4 ">{statutEnregistrement}</span>
     </div>
   </div>
-  <div class="mt-5  w-full md:w-2/3">
+  <!--
+  <div class="mt-5 w-2/3 invisible  md:visible">
     <table>
       <tr>
         {#each months as m}
@@ -225,6 +226,114 @@
           >
         {/each}
       </tr>
+    </table>
+  </div>-->
+  <div class="mt-5 w-full md:w-2/3">
+    <table class="table-auto">
+      {#each months as m, i}
+        <tr>
+          <td class="text-xs text-left">{m}</td>
+          <td class="text-xs text-center w-1/6">
+            {#each tableExpenses as row, j}
+              {#each row as cell, k}
+                {#if j == 0}
+                  {#if k == i}
+                    {#if cell._id < 0}
+                      {cell.value}
+                    {:else}
+                      <input
+                        type="text"
+                        bind:value={cell.value}
+                        on:change={expensesChanges}
+                        class="w-full text-xs text-right appearance-none border-2 border-gray-200 rounded py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+                      />
+                    {/if}
+                  {/if}
+                {/if}
+              {/each}
+            {/each}
+          </td>
+          <td class="text-xs text-center w-1/6">
+            {#each tableExpenses as row, j}
+              {#each row as cell, k}
+                {#if j == 1}
+                  {#if k == i}
+                    {#if cell._id < 0}
+                      {cell.value}
+                    {:else}
+                      <input
+                        type="text"
+                        bind:value={cell.value}
+                        on:change={expensesChanges}
+                        class="w-full text-xs text-right appearance-none border-2 border-gray-200 rounded py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+                      />
+                    {/if}{/if}
+                {/if}
+              {/each}
+            {/each}
+          </td>
+          <td class="text-xs text-center w-1/6">
+            {#each tableExpenses as row, j}
+              {#each row as cell, k}
+                {#if j == 2}
+                  {#if k == i}
+                    {#if cell._id < 0}
+                      {cell.value}
+                    {:else}
+                      <input
+                        type="text"
+                        bind:value={cell.value}
+                        on:change={expensesChanges}
+                        class="w-full text-xs text-right appearance-none border-2 border-gray-200 rounded py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+                      />
+                    {/if}{/if}
+                {/if}
+              {/each}
+            {/each}
+          </td>
+          <td class="text-xs text-center w-1/6">
+            {#each tableExpenses as row, j}
+              {#each row as cell, k}
+                {#if j == 3}
+                  {#if k == i}
+                    {#if cell._id < 0}
+                      {cell.value}
+                    {:else}
+                      <input
+                        type="text"
+                        bind:value={cell.value}
+                        on:change={expensesChanges}
+                        class="w-full text-xs text-right appearance-none border-2 border-gray-200 rounded py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+                      />
+                    {/if}{/if}
+                {/if}
+              {/each}
+            {/each}
+          </td>
+          <td class="text-xs text-center w-1/6">
+            {#each tableExpenses as row, j}
+              {#each row as cell, k}
+                {#if j == 4}
+                  {#if k == i}
+                    {#if cell._id < 0}
+                      {cell.value}
+                    {:else}
+                      <input
+                        type="text"
+                        bind:value={cell.value}
+                        on:change={expensesChanges}
+                        class="w-full text-xs text-right appearance-none border-2 border-gray-200 rounded py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-pink-400"
+                      />
+                    {/if}{/if}
+                {/if}
+              {/each}
+            {/each}
+          </td>
+          <td class="text-right">
+            {totalExpenses[i]}
+          </td>
+        </tr>
+      {/each}
     </table>
   </div>
 </div>
