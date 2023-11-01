@@ -707,7 +707,11 @@
       <div class="grid grid-cols-3 w-full text-center">
         <div>
           <p>Salaire prév.</p>
-          <p>{totalSalaries.toLocaleString("fr")}</p>
+          <p>
+            {totalSalaries.toLocaleString("fr", {
+              maximumFractionDigits: 0,
+            })}
+          </p>
         </div>
         <div>
           <p>IR prév.</p>
@@ -723,7 +727,9 @@
       <div class="grid grid-cols-3 w-full text-center mt-2 md:mt-10">
         <div>
           <p>CA réalisé</p>
-          <p>{totalRealizedInvoices.toLocaleString("fr")}</p>
+          <p>
+            {totalRealizedInvoices.toLocaleString("fr")}
+          </p>
         </div>
         <div>
           <p>CA potentiel</p>
