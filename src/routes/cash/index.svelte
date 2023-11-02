@@ -3,8 +3,9 @@
 
 <script>
   import { YYYYMM } from "$lib/date_functions";
-
   import { onMount } from "svelte";
+  import chartjs from "chart.js/auto";
+
   let statutEnregistrement = "";
 
   let banks = [];
@@ -73,7 +74,19 @@
     "NOV",
     "DEC",
   ];
+
+  let chartSalaries;
+  let ctxSalaries;
+  var chartSalariesData = [];
+
   onMount(async (promise) => {
+    loadTables();
+
+    ctxSalaries = chartSalaries.getContext("2d");
+    chartSalariesData = new chartjs(ctxSalaries, {});
+  });
+
+  export async function loadTables() {
     Promise.all([
       fetch("/MDB/expenses"),
       fetch("/MDB/salaries"),
@@ -91,71 +104,84 @@
         openfieldExpenses = await op.openfield;
       })
       .then(() => {
-        loadTables();
+        currentSalaries = [];
+        for (var i = 0; i < banks.length; i++) {
+          if (banks[i].group === "Openfield") {
+            banksOpenfield.push(banks[i]);
+          }
+          if (banks[i].group === "Perso") {
+            currentSalaries.push(0);
+            banksPerso.push(banks[i]);
+          }
+        }
+        banksOpenfield = banksOpenfield;
+        banksPerso = banksPerso;
+
+        totalSalaries = ["Salaires", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        totalPersoExpenses = [
+          "Perso dépenses",
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ];
+        totalOpenfieldExpenses = [
+          "Openfield dépenses",
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ];
+        for (var j = 0; j <= 11; j++) {
+          for (var k = 0; k < persoExpenses.length; k++) {
+            if (
+              persoExpenses[k].year === currentYear &&
+              persoExpenses[k].month === j + 1
+            ) {
+              totalPersoExpenses[j + 1] =
+                totalPersoExpenses[j + 1] + persoExpenses[k].amount;
+            }
+          }
+          for (var k = 0; k < salaries.length; k++) {
+            if (
+              salaries[k].year === currentYear &&
+              salaries[k].month === j + 1
+            ) {
+              totalSalaries[j + 1] = totalSalaries[j + 1] + salaries[k].amount;
+            }
+          }
+          for (var k = 0; k < openfieldExpenses.length; k++) {
+            if (
+              openfieldExpenses[k].year === currentYear &&
+              openfieldExpenses[k].month === j + 1
+            ) {
+              totalOpenfieldExpenses[j + 1] =
+                totalOpenfieldExpenses[j + 1] + openfieldExpenses[k].amount;
+            }
+          }
+        }
+        totalPersoExpenses = totalPersoExpenses;
+        totalSalaries = totalSalaries;
+        totalOpenfieldExpenses = totalOpenfieldExpenses;
+
+        salaryChanges();
       });
-  });
-
-  function loadTables() {
-    currentSalaries = [];
-    for (var i = 0; i < banks.length; i++) {
-      if (banks[i].group === "Openfield") {
-        banksOpenfield.push(banks[i]);
-      }
-      if (banks[i].group === "Perso") {
-        currentSalaries.push(0);
-        banksPerso.push(banks[i]);
-      }
-    }
-    banksOpenfield = banksOpenfield;
-    banksPerso = banksPerso;
-
-    totalSalaries = ["Salaires", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    totalPersoExpenses = ["Perso dépenses", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    totalOpenfieldExpenses = [
-      "Openfield dépenses",
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-    ];
-    for (var j = 0; j <= 11; j++) {
-      for (var k = 0; k < persoExpenses.length; k++) {
-        if (
-          persoExpenses[k].year === currentYear &&
-          persoExpenses[k].month === j + 1
-        ) {
-          totalPersoExpenses[j + 1] =
-            totalPersoExpenses[j + 1] + persoExpenses[k].amount;
-        }
-      }
-      for (var k = 0; k < salaries.length; k++) {
-        if (salaries[k].year === currentYear && salaries[k].month === j + 1) {
-          totalSalaries[j + 1] = totalSalaries[j + 1] + salaries[k].amount;
-        }
-      }
-      for (var k = 0; k < openfieldExpenses.length; k++) {
-        if (
-          openfieldExpenses[k].year === currentYear &&
-          openfieldExpenses[k].month === j + 1
-        ) {
-          totalOpenfieldExpenses[j + 1] =
-            totalOpenfieldExpenses[j + 1] + openfieldExpenses[k].amount;
-        }
-      }
-    }
-    totalPersoExpenses = totalPersoExpenses;
-    totalSalaries = totalSalaries;
-    totalOpenfieldExpenses = totalOpenfieldExpenses;
-
-    salaryChanges();
   }
 
   export async function saveData() {
@@ -219,6 +245,20 @@
       totalSalaries[currentMonth] =
         totalSalaries[currentMonth] + Number(currentSalaries[i]);
     }
+
+    chartSalariesData.destroy();
+    chartSalariesData = new chartjs(ctxSalaries, {
+      type: "line",
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: "Salaires",
+            data: totalSalaries,
+          },
+        ],
+      },
+    });
   }
 </script>
 
@@ -300,7 +340,10 @@
     </div>
     <div class="ml-4">{statutEnregistrement}</div>
   </div>
-  <div class="mt-5  w-full md:w-2/3 text-xs md:text-base">
+  <div class="mt-5 w-full md:w-2/3 text-xs md:text-base">
+    <canvas bind:this={chartSalaries} />
+  </div>
+  <div class="mt-5 w-full md:w-2/3 text-xs md:text-base">
     <table class="w-full md:w-1/2">
       {#each months as m, i}
         <tr>
