@@ -301,27 +301,21 @@
     <div class="ml-4">{statutEnregistrement}</div>
   </div>
   <div class="mt-5  w-full md:w-2/3 text-xs md:text-base">
-    <table>
-      <tr>
-        {#each months as m}
-          <td class="text-center">{m}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each totalSalaries as s}
-          <td class="text-right py-1 px-1">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each totalPersoExpenses as s}
-          <td class="text-right py-1 px-1">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
-      <tr>
-        {#each totalOpenfieldExpenses as s}
-          <td class="text-right py-1 px-1">{s.toLocaleString("fr")}</td>
-        {/each}
-      </tr>
+    <table class="w-full md:w-1/2">
+      {#each months as m, i}
+        <tr>
+          <td class="text-left w-1/6">{m}</td>
+          <td class="text-right w-1/6"
+            >{totalSalaries[i].toLocaleString("fr")}</td
+          >
+          <td class="text-right w-1/6"
+            >{totalPersoExpenses[i].toLocaleString("fr")}</td
+          >
+          <td class="text-right  w-1/6"
+            >{totalOpenfieldExpenses[i].toLocaleString("fr")}</td
+          >
+        </tr>
+      {/each}
     </table>
   </div>
 </div>
