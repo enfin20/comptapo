@@ -51,7 +51,10 @@
   let salaries = [];
   let currentSalaries = [];
   let totalSalaries = ["Salaires", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  let totalSalariesGraph = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  let totalObjectiveIRGraph = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   let soldeCash = 0;
+  let currentIrObjective = 0;
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth() + 1;
@@ -61,6 +64,20 @@
 
   let months = [
     "",
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC",
+  ];
+  let monthsGraph = [
     "JAN",
     "FEB",
     "MAR",
@@ -92,8 +109,9 @@
       fetch("/MDB/salaries"),
       fetch("/MDB/banks?group=all"),
       fetch("/MDB/openfield"),
+      fetch("/MDB/irobjectives?year=" + currentYear),
     ])
-      .then(async ([res1, res2, res3, res4]) => {
+      .then(async ([res1, res2, res3, res4, res5]) => {
         const exp = await res1.json();
         persoExpenses = await exp.expenses;
         const sa = await res2.json();
@@ -102,6 +120,8 @@
         banks = await b.banks;
         const op = await res4.json();
         openfieldExpenses = await op.openfield;
+        const iro = await res5.json();
+        currentIrObjective = await iro.ir[0].amount;
       })
       .then(() => {
         currentSalaries = [];
@@ -118,6 +138,8 @@
         banksPerso = banksPerso;
 
         totalSalaries = ["Salaires", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        totalSalariesGraph = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        totalObjectiveIRGraph = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         totalPersoExpenses = [
           "Perso dépenses",
           0,
@@ -246,15 +268,27 @@
         totalSalaries[currentMonth] + Number(currentSalaries[i]);
     }
 
+    // mise en forme du graph
+    totalSalariesGraph[0] = totalSalaries[1];
+    totalObjectiveIRGraph[0] = currentIrObjective / 12;
+    for (var i = 1; i < 12; i++) {
+      totalSalariesGraph[i] = totalSalariesGraph[i - 1] + totalSalaries[i + 1];
+      totalObjectiveIRGraph[i] =
+        totalObjectiveIRGraph[i - 1] + currentIrObjective / 12;
+    }
     chartSalariesData.destroy();
     chartSalariesData = new chartjs(ctxSalaries, {
       type: "line",
       data: {
-        labels: months,
+        labels: monthsGraph,
         datasets: [
           {
             label: "Salaires",
-            data: totalSalaries,
+            data: totalSalariesGraph,
+          },
+          {
+            label: "Objectif",
+            data: totalObjectiveIRGraph,
           },
         ],
       },
