@@ -606,7 +606,7 @@
                 data: cashGraph,
                 fill: {
                   target: "origin",
-                  above: "rgba(11, 149, 100, 0.08)",
+                  above: "rgba(255, 255, 255, 0.08)",
                   below: "rgba(255, 255, 255, 0.08)",
                 },
                 borderColor: categoryTypesColor[4],
@@ -618,7 +618,7 @@
                 data: cashPessimistGraph,
                 fill: {
                   target: "origin",
-                  above: "rgba(255, 255, 255, 0.08)",
+                  above: "rgba(11, 149, 100, 0.08)",
                   below: "rgba(218, 96, 96, 0.08)",
                 },
                 borderColor: categoryTypesColor[1],
