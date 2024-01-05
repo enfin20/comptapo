@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-  <title>Compta perso & Openfield</title>
+  <title>Compta perso & Opfd</title>
 </svelte:head>
 
 <style>

@@ -6,12 +6,12 @@
 
   import { onMount } from "svelte";
   let statutEnregistrement = "";
-  let categoryOpenfieldExpenses = [];
+  let categoryOpfdExpenses = [];
   let categoryPersoExpenses = [];
 
-  let openfieldExpenses = [];
-  let tableOpenfieldExpenses = [];
-  let totalOpenfieldExpenses = ["Total", 0];
+  let OpfdExpenses = [];
+  let tableOpfdExpenses = [];
+  let totalOpfdExpenses = ["Total", 0];
 
   let persoExpenses = [];
   let tablePersoExpenses = [];
@@ -25,16 +25,16 @@
     Promise.all([
       fetch("/MDB/categories?group=Openfield"),
       fetch("/MDB/categories?group=Perso"),
-      fetch("/MDB/annualopenfield"),
+      fetch("/MDB/annualopfd"),
       fetch("/MDB/annualexpenses"),
     ])
       .then(async ([res1, res2, res3, res4]) => {
         const cat = await res1.json();
-        categoryOpenfieldExpenses = await cat.categories;
+        categoryOpfdExpenses = await cat.categories;
         const ca = await res2.json();
         categoryPersoExpenses = await ca.categories;
         const ope = await res3.json();
-        openfieldExpenses = await ope.expenses;
+        OpfdExpenses = await ope.expenses;
         const exp = await res4.json();
         persoExpenses = await exp.expenses;
       })
@@ -49,32 +49,31 @@
     }
     years = years;
 
-    tableOpenfieldExpenses = [];
-    totalOpenfieldExpenses = ["Total", 0];
+    tableOpfdExpenses = [];
+    totalOpfdExpenses = ["Total", 0];
 
     var row = [];
     let _id = 0;
     let value = 0;
-    for (var i = 0; i < categoryOpenfieldExpenses.length; i++) {
-      row.push({ _id: -i - 1, value: categoryOpenfieldExpenses[i].name });
+    for (var i = 0; i < categoryOpfdExpenses.length; i++) {
+      row.push({ _id: -i - 1, value: categoryOpfdExpenses[i].name });
       _id = 0;
       value = 0;
-      for (var k = 0; k < openfieldExpenses.length; k++) {
+      for (var k = 0; k < OpfdExpenses.length; k++) {
         if (
-          openfieldExpenses[k].year === currentYear &&
-          openfieldExpenses[k].category === categoryOpenfieldExpenses[i].name
+          OpfdExpenses[k].year === currentYear &&
+          OpfdExpenses[k].category === categoryOpfdExpenses[i].name
         ) {
-          _id = openfieldExpenses[k]._id;
-          value = openfieldExpenses[k].amount;
-          totalOpenfieldExpenses[1] =
-            totalOpenfieldExpenses[1] + openfieldExpenses[k].amount;
+          _id = OpfdExpenses[k]._id;
+          value = OpfdExpenses[k].amount;
+          totalOpfdExpenses[1] = totalOpfdExpenses[1] + OpfdExpenses[k].amount;
         }
       }
       row.push({ _id: _id, previousValue: value, value: value });
-      tableOpenfieldExpenses.push(row);
+      tableOpfdExpenses.push(row);
       row = [];
     }
-    tableOpenfieldExpenses = tableOpenfieldExpenses;
+    tableOpfdExpenses = tableOpfdExpenses;
 
     tablePersoExpenses = [];
     totalPersoExpenses = ["Total", 0];
@@ -103,33 +102,32 @@
   export async function saveData() {
     let res;
     statutEnregistrement = "   En cours ....";
-    for (var i = 0; i < categoryOpenfieldExpenses.length; i++) {
+    for (var i = 0; i < categoryOpfdExpenses.length; i++) {
       if (
-        tableOpenfieldExpenses[i][1]._id !== 0 &&
-        tableOpenfieldExpenses[i][1].value !==
-          tableOpenfieldExpenses[i][1].previousValue
+        tableOpfdExpenses[i][1]._id !== 0 &&
+        tableOpfdExpenses[i][1].value !== tableOpfdExpenses[i][1].previousValue
       ) {
-        res = await fetch("/MDB/annualopenfield", {
+        res = await fetch("/MDB/annualopfd", {
           method: "PUT",
           body: JSON.stringify({
-            _id: tableOpenfieldExpenses[i][1]._id,
-            amount: Number(tableOpenfieldExpenses[i][1].value),
+            _id: tableOpfdExpenses[i][1]._id,
+            amount: Number(tableOpfdExpenses[i][1].value),
           }),
         });
       }
       if (
-        tableOpenfieldExpenses[i][1]._id === 0 &&
-        tableOpenfieldExpenses[i][1].value !== 0
+        tableOpfdExpenses[i][1]._id === 0 &&
+        tableOpfdExpenses[i][1].value !== 0
       ) {
-        res = await fetch("/MDB/annualopenfield", {
+        res = await fetch("/MDB/annualopfd", {
           method: "POST",
           body: JSON.stringify({
             year: currentYear,
-            category: categoryOpenfieldExpenses[i].name,
-            amount: Number(tableOpenfieldExpenses[i][1].value),
+            category: categoryOpfdExpenses[i].name,
+            amount: Number(tableOpfdExpenses[i][1].value),
           }),
         });
-        tableOpenfieldExpenses[i][1]._id = await res.json();
+        tableOpfdExpenses[i][1]._id = await res.json();
       }
     }
 
@@ -166,10 +164,10 @@
   }
 
   export async function expensesChanges() {
-    totalOpenfieldExpenses = ["Total", 0];
-    for (var i = 0; i < categoryOpenfieldExpenses.length; i++) {
-      totalOpenfieldExpenses[1] =
-        totalOpenfieldExpenses[1] + Number(tableOpenfieldExpenses[i][1].value);
+    totalOpfdExpenses = ["Total", 0];
+    for (var i = 0; i < categoryOpfdExpenses.length; i++) {
+      totalOpfdExpenses[1] =
+        totalOpfdExpenses[1] + Number(tableOpfdExpenses[i][1].value);
     }
     totalPersoExpenses = ["Total", 0];
     for (var i = 0; i < categoryPersoExpenses.length; i++) {
@@ -213,10 +211,10 @@
   <div class="grid grid-cols-2 gap-5 mt-5 w-full md:w-2/3">
     <div>
       <div class="md:m-5">
-        <h1 class="text-lg uppercase">Openfield</h1>
+        <h1 class="text-lg uppercase">Opfd</h1>
       </div>
       <table>
-        {#each tableOpenfieldExpenses as row}
+        {#each tableOpfdExpenses as row}
           <tr>
             {#each row as cell}
               {#if cell._id < 0}
@@ -235,7 +233,7 @@
           </tr>
         {/each}
         <tr>
-          {#each totalOpenfieldExpenses as s}
+          {#each totalOpfdExpenses as s}
             <td class="text-sm text-right py-1 px-1 font-bold"
               >{s.toLocaleString("fr")}</td
             >

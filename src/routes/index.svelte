@@ -44,9 +44,9 @@
   let ctxPersoExpenses;
   var chartPersoExpensesData = [];
 
-  let chartOpenfieldExpenses;
-  let ctxOpenfieldExpenses;
-  var chartOpenfieldExpensesData = [];
+  let chartOpfdExpenses;
+  let ctxOpfdExpenses;
+  var chartOpfdExpensesData = [];
 
   let chartCash;
   let ctxCash;
@@ -54,13 +54,13 @@
 
   let dates = [""];
 
-  let categoryOpenfieldExpenses = [];
+  let categoryOpfdExpenses = [];
   let categoryPersoExpenses = [];
 
   let banks = [];
   let totalBank = 0;
   let totalBankPerso = 0;
-  let totalBankOpenfield = 0;
+  let totalBankOpfd = 0;
 
   let invoices = [];
   let totalPotentialInvoices = 0; // somme des factures de l'année
@@ -70,8 +70,8 @@
   let persoExpenses = [];
   let persoAnnualExpenses = [];
 
-  let openfieldExpenses = [];
-  let openfieldAnnualExpenses = [];
+  let OpfdExpenses = [];
+  let OpfdAnnualExpenses = [];
 
   let salaries = [];
   let totalSalaries = 0;
@@ -92,12 +92,12 @@
 
   // données pour la synthèse du cash
   let totalPersoExpensesCurrentMonth = 0;
-  let totalOpenfieldExpensesCurrentMonth = 0;
+  let totalOpfdExpensesCurrentMonth = 0;
   let totalSalariesCurrentMonth = 0;
   let cssNeg = "text-red-400";
-  let cssOpenfieldNeg = "text-red-400";
+  let cssOpfdNeg = "text-red-400";
   let soldeCash = 0;
-  let soldeOpenfield = 0;
+  let soldeOpfd = 0;
 
   onMount(async (promise) => {
     loadTables();
@@ -114,8 +114,8 @@
     ctxPersoExpenses = chartPersoExpenses.getContext("2d");
     chartPersoExpensesData = new chartjs(ctxPersoExpenses, {});
 
-    ctxOpenfieldExpenses = chartOpenfieldExpenses.getContext("2d");
-    chartOpenfieldExpensesData = new chartjs(ctxOpenfieldExpenses, {});
+    ctxOpfdExpenses = chartOpfdExpenses.getContext("2d");
+    chartOpfdExpensesData = new chartjs(ctxOpfdExpenses, {});
   });
 
   async function loadTables() {
@@ -128,8 +128,8 @@
       fetch("/MDB/annualexpenses?year=" + currentYear),
       fetch("/MDB/salaries"),
       fetch("/MDB/banks?group=all"),
-      fetch("/MDB/openfield"),
-      fetch("/MDB/annualopenfield?year=" + currentYear),
+      fetch("/MDB/opfd"),
+      fetch("/MDB/annualopfd?year=" + currentYear),
       fetch("/MDB/invoices"),
     ])
       .then(
@@ -151,7 +151,7 @@
           const cao = await res2.json();
           currentCaObjective = await cao.ca[0].amount;
           const cat = await res3.json();
-          categoryOpenfieldExpenses = await cat.categories;
+          categoryOpfdExpenses = await cat.categories;
           const ca = await res4.json();
           categoryPersoExpenses = await ca.categories;
           const exp = await res5.json();
@@ -163,9 +163,9 @@
           const b = await res8.json();
           banks = await b.banks;
           const op = await res9.json();
-          openfieldExpenses = await op.openfield;
+          OpfdExpenses = await op.openfield;
           const aop = await res10.json();
-          openfieldAnnualExpenses = await aop.expenses;
+          OpfdAnnualExpenses = await aop.expenses;
           const inv = await res11.json();
           invoices = await inv.invoices;
         }
@@ -180,7 +180,7 @@
           if (banks[i].group === "Perso") {
             totalBankPerso = totalBankPerso + banks[i].amount;
           } else {
-            totalBankOpenfield = totalBankPerso + banks[i].amount;
+            totalBankOpfd = totalBankPerso + banks[i].amount;
           }
         }
         // pour le graph
@@ -205,25 +205,20 @@
             }
           }
         }
-        // categoryOpenfieldExpensesLabel : pour l'affichage dans les graphes
-        let categoryOpenfieldExpensesLabel = [];
-        for (var i = 0; i < categoryOpenfieldExpenses.length; i++) {
-          categoryOpenfieldExpensesLabel.push(
-            categoryOpenfieldExpenses[i].name
-          );
+        // categoryOpfdExpensesLabel : pour l'affichage dans les graphes
+        let categoryOpfdExpensesLabel = [];
+        for (var i = 0; i < categoryOpfdExpenses.length; i++) {
+          categoryOpfdExpensesLabel.push(categoryOpfdExpenses[i].name);
         }
-        // openfieldAnnualExpensesValue : pour l'affichage dans les graphes
-        let openfieldAnnualExpensesValue = [];
-        for (var i = 0; i < categoryOpenfieldExpensesLabel.length; i++) {
-          for (var j = 0; j < openfieldAnnualExpenses.length; j++) {
+        // OpfdAnnualExpensesValue : pour l'affichage dans les graphes
+        let OpfdAnnualExpensesValue = [];
+        for (var i = 0; i < categoryOpfdExpensesLabel.length; i++) {
+          for (var j = 0; j < OpfdAnnualExpenses.length; j++) {
             if (
-              openfieldAnnualExpenses[j].year === currentYear &&
-              categoryOpenfieldExpensesLabel[i] ===
-                openfieldAnnualExpenses[j].category
+              OpfdAnnualExpenses[j].year === currentYear &&
+              categoryOpfdExpensesLabel[i] === OpfdAnnualExpenses[j].category
             ) {
-              openfieldAnnualExpensesValue.push(
-                openfieldAnnualExpenses[j].amount
-              );
+              OpfdAnnualExpensesValue.push(OpfdAnnualExpenses[j].amount);
             }
           }
         }
@@ -239,7 +234,7 @@
         cashPessimistGraph = [];
 
         let tempTotalPersoExpenses = 0;
-        let tempTotalOpenfieldExpenses = 0;
+        let tempTotalOpfdExpenses = 0;
         // somme de toutes les factures existantes à venir
         let tempTotalInvoices = 0;
         // somme de toutes les factures payées existantes à venir
@@ -281,14 +276,14 @@
               }
             }
 
-            tempTotalOpenfieldExpenses = 0;
-            for (var k = 0; k < openfieldExpenses.length; k++) {
+            tempTotalOpfdExpenses = 0;
+            for (var k = 0; k < OpfdExpenses.length; k++) {
               if (
-                openfieldExpenses[k].year === i &&
-                openfieldExpenses[k].month === j + 1
+                OpfdExpenses[k].year === i &&
+                OpfdExpenses[k].month === j + 1
               ) {
-                tempTotalOpenfieldExpenses =
-                  tempTotalOpenfieldExpenses + openfieldExpenses[k].amount;
+                tempTotalOpfdExpenses =
+                  tempTotalOpfdExpenses + OpfdExpenses[k].amount;
               }
             }
 
@@ -361,19 +356,19 @@
             console.info("tempTotalInvoices", tempTotalInvoices);
             console.info("tempTotalPersoExpenses", -tempTotalPersoExpenses);
             console.info(
-              "tempTotalOpenfieldExpenses",
-              -tempTotalOpenfieldExpenses
+              "tempTotalOpfdExpenses",
+              -tempTotalOpfdExpenses
             );
             */
             tempCashGraph =
               tempCashGraph +
               tempTotalInvoices -
               tempTotalPersoExpenses -
-              tempTotalOpenfieldExpenses;
+              tempTotalOpfdExpenses;
             if (i === currentYear && j === currentMonth) {
               totalPersoExpensesCurrentMonth = tempTotalPersoExpenses;
               totalSalariesCurrentMonth = tempTotalSalaries;
-              totalOpenfieldExpensesCurrentMonth = tempTotalOpenfieldExpenses;
+              totalOpfdExpensesCurrentMonth = tempTotalOpfdExpenses;
             }
             if (
               i === currentYear &&
@@ -385,13 +380,13 @@
                 tempCashPessimist +
                 tempTotalInvoices -
                 tempTotalPersoExpenses -
-                tempTotalOpenfieldExpenses;
+                tempTotalOpfdExpenses;
               // données pour la synthèse du cash
             } else {
               tempCashPessimist =
                 tempCashPessimist -
                 tempTotalPersoExpenses -
-                tempTotalOpenfieldExpenses;
+                tempTotalOpfdExpenses;
             }
 
             cashPessimist.push(tempCashPessimist);
@@ -446,11 +441,10 @@
         if (soldeCash < 0) {
           cssNeg = "text-red-400";
         }
-        soldeOpenfield =
-          totalBankOpenfield - totalOpenfieldExpensesCurrentMonth;
-        cssOpenfieldNeg = "";
-        if (soldeOpenfield < 0) {
-          cssOpenfieldNeg = "text-red-400";
+        soldeOpfd = totalBankOpfd - totalOpfdExpensesCurrentMonth;
+        cssOpfdNeg = "";
+        if (soldeOpfd < 0) {
+          cssOpfdNeg = "text-red-400";
         }
         dates = dates;
         cashPessimist = cashPessimist;
@@ -671,15 +665,15 @@
           },
         });
 
-        chartOpenfieldExpensesData.destroy();
-        chartOpenfieldExpensesData = new chartjs(ctxOpenfieldExpenses, {
+        chartOpfdExpensesData.destroy();
+        chartOpfdExpensesData = new chartjs(ctxOpfdExpenses, {
           type: "doughnut",
           data: {
-            labels: categoryOpenfieldExpensesLabel,
+            labels: categoryOpfdExpensesLabel,
             datasets: [
               {
                 label: "",
-                data: openfieldAnnualExpensesValue,
+                data: OpfdAnnualExpensesValue,
               },
             ],
           },
@@ -691,7 +685,7 @@
               },
               title: {
                 display: true,
-                text: "Dépenses openfield",
+                text: "Dépenses Opfd",
               },
             },
             plugins: { legend: { labels: { boxWidth: 15 } } },
@@ -802,11 +796,11 @@
         {/each}
         <div class="text-center">
           <p>Dépenses mois</p>
-          <p>{totalOpenfieldExpensesCurrentMonth.toLocaleString("fr")}</p>
+          <p>{totalOpfdExpensesCurrentMonth.toLocaleString("fr")}</p>
         </div>
         <div class="text-center">
-          <p class={cssOpenfieldNeg}>Solde cash</p>
-          <p class={cssOpenfieldNeg}>{soldeOpenfield.toLocaleString("fr")}</p>
+          <p class={cssOpfdNeg}>Solde cash</p>
+          <p class={cssOpfdNeg}>{soldeOpfd.toLocaleString("fr")}</p>
         </div>
       </div>
     </div>
@@ -816,7 +810,7 @@
           Dépenses personnelles<canvas bind:this={chartPersoExpenses} />
         </div>
         <div>
-          Dépenses Openfield<canvas bind:this={chartOpenfieldExpenses} />
+          Dépenses Opfd<canvas bind:this={chartOpfdExpenses} />
         </div>
       </div>
     </div>

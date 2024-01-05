@@ -15,10 +15,10 @@
     </div>
     <div>
       <a
-        href="/openfield"
+        href="/opfd"
         class=" px-3 py-2 flex items-center uppercase font-bold leading-snug text-white hover:opacity-75"
       >
-        Openfield
+        Opfd
       </a>
     </div>
     <div>

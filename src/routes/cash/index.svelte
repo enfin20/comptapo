@@ -9,7 +9,7 @@
   let statutEnregistrement = "";
 
   let banks = [];
-  let banksOpenfield = [];
+  let banksOpfd = [];
   let banksPerso = [];
   let totalBankPerso = 0;
 
@@ -30,23 +30,9 @@
     0,
   ];
 
-  let openfieldExpenses = [];
-  let totalOpenfieldExpenses = [
-    "Openfield dépenses",
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-  ];
-  let soldeOpenfield = 0;
+  let OpfdExpenses = [];
+  let totalOpfdExpenses = ["Opfd dépenses", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  let soldeOpfd = 0;
 
   let salaries = [];
   let currentSalaries = [];
@@ -60,7 +46,7 @@
   let currentMonth = new Date().getMonth() + 1;
 
   let cssNeg = "text-red-400";
-  let cssOpenfieldNeg = "text-red-400";
+  let cssOpfdNeg = "text-red-400";
 
   let months = [
     "",
@@ -108,7 +94,7 @@
       fetch("/MDB/expenses"),
       fetch("/MDB/salaries"),
       fetch("/MDB/banks?group=all"),
-      fetch("/MDB/openfield"),
+      fetch("/MDB/opfd"),
       fetch("/MDB/irobjectives?year=" + currentYear),
     ])
       .then(async ([res1, res2, res3, res4, res5]) => {
@@ -119,7 +105,7 @@
         const b = await res3.json();
         banks = await b.banks;
         const op = await res4.json();
-        openfieldExpenses = await op.openfield;
+        OpfdExpenses = await op.openfield;
         const iro = await res5.json();
         currentIrObjective = await iro.ir[0].amount;
       })
@@ -127,14 +113,14 @@
         currentSalaries = [];
         for (var i = 0; i < banks.length; i++) {
           if (banks[i].group === "Openfield") {
-            banksOpenfield.push(banks[i]);
+            banksOpfd.push(banks[i]);
           }
           if (banks[i].group === "Perso") {
             currentSalaries.push(0);
             banksPerso.push(banks[i]);
           }
         }
-        banksOpenfield = banksOpenfield;
+        banksOpfd = banksOpfd;
         banksPerso = banksPerso;
 
         totalSalaries = ["Salaires", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -155,8 +141,8 @@
           0,
           0,
         ];
-        totalOpenfieldExpenses = [
-          "Openfield dépenses",
+        totalOpfdExpenses = [
+          "Opfd dépenses",
           0,
           0,
           0,
@@ -188,19 +174,19 @@
               totalSalaries[j + 1] = totalSalaries[j + 1] + salaries[k].amount;
             }
           }
-          for (var k = 0; k < openfieldExpenses.length; k++) {
+          for (var k = 0; k < OpfdExpenses.length; k++) {
             if (
-              openfieldExpenses[k].year === currentYear &&
-              openfieldExpenses[k].month === j + 1
+              OpfdExpenses[k].year === currentYear &&
+              OpfdExpenses[k].month === j + 1
             ) {
-              totalOpenfieldExpenses[j + 1] =
-                totalOpenfieldExpenses[j + 1] + openfieldExpenses[k].amount;
+              totalOpfdExpenses[j + 1] =
+                totalOpfdExpenses[j + 1] + OpfdExpenses[k].amount;
             }
           }
         }
         totalPersoExpenses = totalPersoExpenses;
         totalSalaries = totalSalaries;
-        totalOpenfieldExpenses = totalOpenfieldExpenses;
+        totalOpfdExpenses = totalOpfdExpenses;
 
         salaryChanges();
       });
@@ -228,12 +214,12 @@
         }),
       });
     }
-    for (var i = 0; i < banksOpenfield.length; i++) {
+    for (var i = 0; i < banksOpfd.length; i++) {
       res = await fetch("/MDB/banks", {
         method: "PUT",
         body: JSON.stringify({
-          _id: banksOpenfield[i]._id,
-          amount: Number(banksOpenfield[i].amount),
+          _id: banksOpfd[i]._id,
+          amount: Number(banksOpfd[i].amount),
         }),
       });
     }
@@ -246,17 +232,16 @@
       // mise à jour des comptes perso en ajoutant le salaire correspondant
       banksPerso[i].amount =
         Number(banksPerso[i].amount) + Number(currentSalaries[i]);
-      // mise à jour du compte Openfield en retranchant le salaire correspondant
-      banksOpenfield[0].amount =
-        Number(banksOpenfield[0].amount) - Number(currentSalaries[i]);
+      // mise à jour du compte Opfd en retranchant le salaire correspondant
+      banksOpfd[0].amount =
+        Number(banksOpfd[0].amount) - Number(currentSalaries[i]);
       // mise à jour du total des comptes persos
       totalBankPerso = totalBankPerso + Number(banksPerso[i].amount);
       // mise à jour des soldes cash
-      soldeOpenfield =
-        banksOpenfield[0].amount - totalOpenfieldExpenses[currentMonth];
-      cssOpenfieldNeg = "";
-      if (soldeOpenfield < 0) {
-        cssOpenfieldNeg = "text-red-400";
+      soldeOpfd = banksOpfd[0].amount - totalOpfdExpenses[currentMonth];
+      cssOpfdNeg = "";
+      if (soldeOpfd < 0) {
+        cssOpfdNeg = "text-red-400";
       }
       soldeCash = totalBankPerso - totalPersoExpenses[currentMonth];
       cssNeg = "";
@@ -347,7 +332,7 @@
         {totalSalaries[currentMonth].toLocaleString("fr")}
       </p>
     </div>
-    {#each banksOpenfield as b}
+    {#each banksOpfd as b}
       <div>
         {b.name}
         <input
@@ -359,11 +344,11 @@
     {/each}
     <div class="text-center">
       <p>Dépenses mois</p>
-      <p>{totalOpenfieldExpenses[currentMonth].toLocaleString("fr")}</p>
+      <p>{totalOpfdExpenses[currentMonth].toLocaleString("fr")}</p>
     </div>
     <div class="text-center">
-      <p class={cssOpenfieldNeg}>Solde cash</p>
-      <p class={cssOpenfieldNeg}>{soldeOpenfield.toLocaleString("fr")}</p>
+      <p class={cssOpfdNeg}>Solde cash</p>
+      <p class={cssOpfdNeg}>{soldeOpfd.toLocaleString("fr")}</p>
     </div>
     <div class="mt-4">
       <button
@@ -389,7 +374,7 @@
             >{totalPersoExpenses[i].toLocaleString("fr")}</td
           >
           <td class="text-right  w-1/6"
-            >{totalOpenfieldExpenses[i].toLocaleString("fr")}</td
+            >{totalOpfdExpenses[i].toLocaleString("fr")}</td
           >
         </tr>
       {/each}
