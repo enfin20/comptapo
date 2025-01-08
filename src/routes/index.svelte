@@ -40,22 +40,15 @@
   let ctxCaObjective;
   var chartCaObjectiveData = [];
 
-  let chartPersoExpenses;
-  let ctxPersoExpenses;
-  var chartPersoExpensesData = [];
-
-  let chartOpfdExpenses;
-  let ctxOpfdExpenses;
-  var chartOpfdExpensesData = [];
-
   let chartCash;
   let ctxCash;
   var chartCashData = [];
 
-  let dates = [""];
+  let chartSalaries;
+  let ctxSalaries;
+  var chartSalariesData = [];
 
-  let categoryOpfdExpenses = [];
-  let categoryPersoExpenses = [];
+  let dates = [""];
 
   let banks = [];
   let totalBank = 0;
@@ -68,10 +61,8 @@
   let currentCaObjective = 0;
 
   let persoExpenses = [];
-  let persoAnnualExpenses = [];
 
   let OpfdExpenses = [];
-  let OpfdAnnualExpenses = [];
 
   let salaries = [];
   let totalSalaries = 0;
@@ -85,6 +76,7 @@
   let cashPessimistGraph = [];
 
   let currentIrObjective = 0;
+  let currentIrObjectiveMonth = 0;
   let totalPrevisionnelIr = 0;
 
   let currentYear = new Date().getFullYear();
@@ -111,65 +103,37 @@
     ctxCash = chartCash.getContext("2d");
     chartCashData = new chartjs(ctxCash, {});
 
-    ctxPersoExpenses = chartPersoExpenses.getContext("2d");
-    chartPersoExpensesData = new chartjs(ctxPersoExpenses, {});
-
-    ctxOpfdExpenses = chartOpfdExpenses.getContext("2d");
-    chartOpfdExpensesData = new chartjs(ctxOpfdExpenses, {});
+    ctxSalaries = chartSalaries.getContext("2d");
+    chartSalariesData = new chartjs(ctxSalaries, {});
   });
 
   async function loadTables() {
     Promise.all([
       fetch("/MDB/irobjectives?year=" + currentYear),
       fetch("/MDB/caobjectives?year=" + currentYear),
-      fetch("/MDB/categories?group=Openfield"),
-      fetch("/MDB/categories?group=Perso"),
       fetch("/MDB/expenses"),
-      fetch("/MDB/annualexpenses?year=" + currentYear),
       fetch("/MDB/salaries"),
       fetch("/MDB/banks?group=all"),
       fetch("/MDB/opfd"),
-      fetch("/MDB/annualopfd?year=" + currentYear),
       fetch("/MDB/invoices"),
     ])
-      .then(
-        async ([
-          res1,
-          res2,
-          res3,
-          res4,
-          res5,
-          res6,
-          res7,
-          res8,
-          res9,
-          res10,
-          res11,
-        ]) => {
-          const iro = await res1.json();
-          currentIrObjective = await iro.ir[0].amount;
-          const cao = await res2.json();
-          currentCaObjective = await cao.ca[0].amount;
-          const cat = await res3.json();
-          categoryOpfdExpenses = await cat.categories;
-          const ca = await res4.json();
-          categoryPersoExpenses = await ca.categories;
-          const exp = await res5.json();
-          persoExpenses = await exp.expenses;
-          const aexp = await res6.json();
-          persoAnnualExpenses = await aexp.expenses;
-          const sa = await res7.json();
-          salaries = await sa.salaries;
-          const b = await res8.json();
-          banks = await b.banks;
-          const op = await res9.json();
-          OpfdExpenses = await op.openfield;
-          const aop = await res10.json();
-          OpfdAnnualExpenses = await aop.expenses;
-          const inv = await res11.json();
-          invoices = await inv.invoices;
-        }
-      )
+      .then(async ([res1, res2, res5, res7, res8, res9, res11]) => {
+        const iro = await res1.json();
+        currentIrObjective = await iro.ir[0].amount;
+        currentIrObjectiveMonth = (currentIrObjective / 12).toFixed(0);
+        const cao = await res2.json();
+        currentCaObjective = await cao.ca[0].amount;
+        const exp = await res5.json();
+        persoExpenses = await exp.expenses;
+        const sa = await res7.json();
+        salaries = await sa.salaries;
+        const b = await res8.json();
+        banks = await b.banks;
+        const op = await res9.json();
+        OpfdExpenses = await op.openfield;
+        const inv = await res11.json();
+        invoices = await inv.invoices;
+      })
       .then(() => {
         // totalBank = Solde total
         // totalBankPerso = Somme des banques perso
@@ -187,42 +151,6 @@
         let tempCashGraph = totalBank;
         let tempCashPessimist = totalBank;
 
-        //data pour les graphs
-        // categoryPersoExpensesLabel : pour l'affichage dans les graphes
-        let categoryPersoExpensesLabel = [];
-        for (var i = 0; i < categoryPersoExpenses.length; i++) {
-          categoryPersoExpensesLabel.push(categoryPersoExpenses[i].name);
-        }
-        // persoAnnualExpensesValue : pour l'affichage dans les graphes
-        let persoAnnualExpensesValue = [];
-        for (var i = 0; i < categoryPersoExpensesLabel.length; i++) {
-          for (var j = 0; j < persoAnnualExpenses.length; j++) {
-            if (
-              persoAnnualExpenses[j].year === currentYear &&
-              categoryPersoExpensesLabel[i] === persoAnnualExpenses[j].category
-            ) {
-              persoAnnualExpensesValue.push(persoAnnualExpenses[j].amount);
-            }
-          }
-        }
-        // categoryOpfdExpensesLabel : pour l'affichage dans les graphes
-        let categoryOpfdExpensesLabel = [];
-        for (var i = 0; i < categoryOpfdExpenses.length; i++) {
-          categoryOpfdExpensesLabel.push(categoryOpfdExpenses[i].name);
-        }
-        // OpfdAnnualExpensesValue : pour l'affichage dans les graphes
-        let OpfdAnnualExpensesValue = [];
-        for (var i = 0; i < categoryOpfdExpensesLabel.length; i++) {
-          for (var j = 0; j < OpfdAnnualExpenses.length; j++) {
-            if (
-              OpfdAnnualExpenses[j].year === currentYear &&
-              categoryOpfdExpensesLabel[i] === OpfdAnnualExpenses[j].category
-            ) {
-              OpfdAnnualExpensesValue.push(OpfdAnnualExpenses[j].amount);
-            }
-          }
-        }
-
         totalPotentialInvoices = 0;
         // cashPessimist : permet de retrouver le premier mois négatif (monthPessimist)
         // solde bank + factures mois en cours - dépenses à venir
@@ -232,7 +160,8 @@
         datesGraph = [];
         cashGraph = [];
         cashPessimistGraph = [];
-
+        let salariesMonth = [];
+        let deltaSalariesMonth = [];
         let tempTotalPersoExpenses = 0;
         let tempTotalOpfdExpenses = 0;
         // somme de toutes les factures existantes à venir
@@ -267,23 +196,15 @@
             // somme des dépenses du mois en cours
             tempTotalPersoExpenses = 0;
             for (var k = 0; k < persoExpenses.length; k++) {
-              if (
-                persoExpenses[k].year === i &&
-                persoExpenses[k].month === j + 1
-              ) {
-                tempTotalPersoExpenses =
-                  tempTotalPersoExpenses + persoExpenses[k].amount;
+              if (persoExpenses[k].year === i && persoExpenses[k].month === j + 1) {
+                tempTotalPersoExpenses = tempTotalPersoExpenses + persoExpenses[k].amount;
               }
             }
 
             tempTotalOpfdExpenses = 0;
             for (var k = 0; k < OpfdExpenses.length; k++) {
-              if (
-                OpfdExpenses[k].year === i &&
-                OpfdExpenses[k].month === j + 1
-              ) {
-                tempTotalOpfdExpenses =
-                  tempTotalOpfdExpenses + OpfdExpenses[k].amount;
+              if (OpfdExpenses[k].year === i && OpfdExpenses[k].month === j + 1) {
+                tempTotalOpfdExpenses = tempTotalOpfdExpenses + OpfdExpenses[k].amount;
               }
             }
 
@@ -294,6 +215,26 @@
                 tempTotalSalaries = tempTotalSalaries + salaries[k].amount;
               }
             }
+            if (i == currentYear) {
+              if (j <= currentMonth) {
+                salariesMonth.push(tempTotalSalaries);
+                if (j == 0) {
+                  deltaSalariesMonth.push(tempTotalSalaries - currentIrObjectiveMonth);
+                } else {
+                  deltaSalariesMonth.push(tempTotalSalaries - currentIrObjectiveMonth + deltaSalariesMonth[j - 1]);
+                }
+              } else {
+                salariesMonth.push(0);
+                if (j == 0) {
+                  deltaSalariesMonth.push(0);
+                } else {
+                  deltaSalariesMonth.push(deltaSalariesMonth[j - 1]);
+                }
+              }
+
+              console.log(j, salariesMonth[j]);
+            }
+
             totalSalaries = totalSalaries + tempTotalSalaries;
 
             tempTotalInvoices = 0;
@@ -302,13 +243,11 @@
                 // année en cours
                 if (j <= currentMonth && invoices[k].month - 1 === j) {
                   tempCurrentYearTotalPaidInvoices =
-                    tempCurrentYearTotalPaidInvoices +
-                    invoices[k].days * invoices[k].dailyRate;
+                    tempCurrentYearTotalPaidInvoices + invoices[k].days * invoices[k].dailyRate;
                 } else {
                   if (invoices[k].month - 1 === j) {
                     tempTotalCurrentYearInvoices =
-                      tempTotalCurrentYearInvoices +
-                      invoices[k].days * invoices[k].dailyRate;
+                      tempTotalCurrentYearInvoices + invoices[k].days * invoices[k].dailyRate;
                   }
                 }
               }
@@ -321,72 +260,40 @@
                     tempTotalInvoices = 0;
                   } else {
                     // sinon, on les comptabilise
-                    tempTotalInvoices =
-                      tempTotalInvoices +
-                      invoices[k].days * invoices[k].dailyRate * 1.2;
+                    tempTotalInvoices = tempTotalInvoices + invoices[k].days * invoices[k].dailyRate * 1.2;
                   }
                 } else {
                   {
                     // mois suivants de l'année en cours
                     // on comptabilise les factures pour le graph
                     if (invoices[k].paymentMonth - 1 === j) {
-                      tempTotalInvoices =
-                        tempTotalInvoices +
-                        invoices[k].days * invoices[k].dailyRate * 1.2;
+                      tempTotalInvoices = tempTotalInvoices + invoices[k].days * invoices[k].dailyRate * 1.2;
                     }
                   }
                 }
               } else {
                 // années suivantes
                 // on comptabilise les factures pour le graph
-                if (
-                  invoices[k].paymentYear === i &&
-                  invoices[k].paymentMonth - 1 === j
-                ) {
-                  tempTotalInvoices =
-                    tempTotalInvoices +
-                    invoices[k].days * invoices[k].dailyRate * 1.2;
+                if (invoices[k].paymentYear === i && invoices[k].paymentMonth - 1 === j) {
+                  tempTotalInvoices = tempTotalInvoices + invoices[k].days * invoices[k].dailyRate * 1.2;
                 }
               }
             }
-            /*
-            console.log("***************");
-            console.info("Annee Mois", i + " " + j);
-            console.info("tempCashGraph", tempCashGraph);
-            console.info("tempTotalInvoices", tempTotalInvoices);
-            console.info("tempTotalPersoExpenses", -tempTotalPersoExpenses);
-            console.info(
-              "tempTotalOpfdExpenses",
-              -tempTotalOpfdExpenses
-            );
-            */
-            tempCashGraph =
-              tempCashGraph +
-              tempTotalInvoices -
-              tempTotalPersoExpenses -
-              tempTotalOpfdExpenses;
+
+            tempCashGraph = tempCashGraph + tempTotalInvoices - tempTotalPersoExpenses - tempTotalOpfdExpenses;
             if (i === currentYear && j === currentMonth) {
               totalPersoExpensesCurrentMonth = tempTotalPersoExpenses;
               totalSalariesCurrentMonth = tempTotalSalaries;
               totalOpfdExpensesCurrentMonth = tempTotalOpfdExpenses;
             }
-            if (
-              i === currentYear &&
-              (j - 1 === currentMonth || j === currentMonth)
-            ) {
+            if (i === currentYear && (j - 1 === currentMonth || j === currentMonth)) {
               // on tient compte des factures non encore encaissées
               //              console.info("tempTotalInvoices Pessimistic", tempTotalInvoices);
               tempCashPessimist =
-                tempCashPessimist +
-                tempTotalInvoices -
-                tempTotalPersoExpenses -
-                tempTotalOpfdExpenses;
+                tempCashPessimist + tempTotalInvoices - tempTotalPersoExpenses - tempTotalOpfdExpenses;
               // données pour la synthèse du cash
             } else {
-              tempCashPessimist =
-                tempCashPessimist -
-                tempTotalPersoExpenses -
-                tempTotalOpfdExpenses;
+              tempCashPessimist = tempCashPessimist - tempTotalPersoExpenses - tempTotalOpfdExpenses;
             }
 
             cashPessimist.push(tempCashPessimist);
@@ -415,21 +322,18 @@
               if (j < currentMonth) {
                 tempIr = tempTotalSalaries;
               } else if (j === currentMonth) {
-                tempIr =
-                  tempTotalSalaries - totalBankPerso + tempTotalPersoExpenses;
+                tempIr = tempTotalSalaries - totalBankPerso + tempTotalPersoExpenses;
               }
               // prévision IR
               if (tempTotalPersoExpenses > tempIr) {
-                totalPrevisionnelIr =
-                  totalPrevisionnelIr + tempTotalPersoExpenses;
+                totalPrevisionnelIr = totalPrevisionnelIr + tempTotalPersoExpenses;
               } else {
                 totalPrevisionnelIr = totalPrevisionnelIr + tempIr;
               }
             }
           }
         }
-        totalPotentialInvoices =
-          tempTotalCurrentYearInvoices + tempCurrentYearTotalPaidInvoices;
+        totalPotentialInvoices = tempTotalCurrentYearInvoices + tempCurrentYearTotalPaidInvoices;
         totalRealizedInvoices = tempCurrentYearTotalPaidInvoices;
         soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
         cssNeg = "";
@@ -460,6 +364,7 @@
           }
         }
         totalSalaries = (totalSalaries / (currentMonth + 1)) * 12;
+
         // gestion des données pour les graphes
         let datasetIrObjective = [];
         if (totalSalaries > totalPrevisionnelIr) {
@@ -638,57 +543,38 @@
           },
         });
 
-        chartPersoExpensesData.destroy();
-        chartPersoExpensesData = new chartjs(ctxPersoExpenses, {
-          type: "doughnut",
+        chartSalariesData.destroy();
+        chartSalariesData = new chartjs(ctxSalaries, {
+          type: "bar",
           data: {
-            labels: categoryPersoExpensesLabel,
+            labels: ["JAN", "FEV", "MAR", "AVR", "MAI", "JUN", "JUL", "AOU", "SEP", "OCT", "NOV", "DEC"],
             datasets: [
               {
-                label: "",
-                data: persoAnnualExpensesValue,
+                label: "Salaires mensuels",
+                data: salariesMonth,
+                backgroundColor: categoryTypesColor[4],
+                order: 2,
+              },
+              {
+                label: "difference",
+                data: deltaSalariesMonth,
+                borderColor: categoryTypesColor[1],
+                pointBackgroundColor: categoryTypesColor[1],
+                pointBorderColor: categoryTypesColor[1],
+                borderWidth: 2,
+                type: "line",
+                order: 1,
+                yAxisID: "yline",
               },
             ],
           },
           options: {
-            responsive: true,
+            scales: { y: { beginAtZero: true }, yline: { position: "right" } },
             plugins: {
               legend: {
-                position: "bottom",
-              },
-              title: {
-                display: true,
-                text: "Dépenses personnelles",
+                display: false,
               },
             },
-            plugins: { legend: { labels: { boxWidth: 15 } } },
-          },
-        });
-
-        chartOpfdExpensesData.destroy();
-        chartOpfdExpensesData = new chartjs(ctxOpfdExpenses, {
-          type: "doughnut",
-          data: {
-            labels: categoryOpfdExpensesLabel,
-            datasets: [
-              {
-                label: "",
-                data: OpfdAnnualExpensesValue,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "bottom",
-              },
-              title: {
-                display: true,
-                text: "Dépenses Opfd",
-              },
-            },
-            plugins: { legend: { labels: { boxWidth: 15 } } },
           },
         });
       });
@@ -805,13 +691,11 @@
       </div>
     </div>
     <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-      <div class="grid grid-cols-2 w-full text-center">
+      <div class="grid grid-cols-1 w-full text-center">
         <div>
-          Dépenses personnelles<canvas bind:this={chartPersoExpenses} />
+          <p>Salaires / Objectif IR</p>
         </div>
-        <div>
-          Dépenses Opfd<canvas bind:this={chartOpfdExpenses} />
-        </div>
+        <canvas bind:this={chartSalaries} />
       </div>
     </div>
   </div>
