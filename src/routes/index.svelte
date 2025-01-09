@@ -82,8 +82,8 @@
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
-  currentYear = 2024;
-  currentMonth = 11;
+  //  currentYear = 2024;
+  //  currentMonth = 11;
 
   // données pour la synthèse du cash
   let totalPersoExpensesCurrentMonth = 0;
@@ -511,6 +511,7 @@
                 borderColor: categoryTypesColor[4],
                 pointBackgroundColor: categoryTypesColor[4],
                 pointBorderColor: categoryTypesColor[4],
+                order: 2,
               },
               {
                 label: "Tréso pessimiste",
@@ -520,9 +521,10 @@
                   above: "rgba(11, 149, 100, 0.08)",
                   below: "rgba(218, 96, 96, 0.08)",
                 },
-                borderColor: categoryTypesColor[1],
-                pointBackgroundColor: categoryTypesColor[1],
-                pointBorderColor: categoryTypesColor[1],
+                borderColor: categoryTypesColor[0],
+                pointBackgroundColor: categoryTypesColor[0],
+                pointBorderColor: categoryTypesColor[0],
+                order: 1,
               },
             ],
           },
@@ -530,7 +532,7 @@
             tension: 0.3,
             cubicInterpolationMode: "monotone",
             borderDash: [20, 10, 60, 10],
-            pointRadius: 5,
+            pointRadius: 3,
             pointHoverRadius: 10,
             pointHitRadius: 30,
             pointBorderWidth: 2,
@@ -593,7 +595,13 @@
                 data: deltaSalariesMonth,
                 borderColor: categoryTypesColor[0],
                 borderWidth: 2,
-                //               pointRadius: 0,
+                pointRadius: 3,
+                pointHoverRadius: 10,
+                pointHitRadius: 30,
+                pointBorderWidth: 2,
+                pointStyle: "rectRounded",
+                pointBackgroundColor: categoryTypesColor[0],
+                pointBorderColor: categoryTypesColor[0],
                 type: "line",
                 order: 1,
                 yAxisID: "yline",
