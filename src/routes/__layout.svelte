@@ -2,7 +2,7 @@
 </script>
 
 <nav>
-  <div class="grid grid-cols-5 md:grid-cols-5 text-xs md:text-base bg-sky-700 px-2 py-2 ">
+  <div class="grid grid-cols-4 md:grid-cols-5 text-xs md:text-base bg-sky-700 px-2 py-2 ">
     <div>
       <a href="/" class=" px-3 py-2 flex items-center uppercase font-bold leading-snug text-white hover:opacity-75">
         Dashboard</a
