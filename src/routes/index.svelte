@@ -66,6 +66,7 @@
 
   let salaries = [];
   let totalSalaries = 0;
+  let totalEstimatedSalaries = 0;
 
   // Pessimist: on en compte pas les factures à venir
   let cashPessimist = ["Tréso pessimiste"];
@@ -208,14 +209,14 @@
               }
             }
 
-            // permet de calculer IR prévisionnel
+            // permet de calculer IR prévisionnel uniquement pour l'année en cours
             tempTotalSalaries = 0;
-            for (var k = 0; k < salaries.length; k++) {
-              if (salaries[k].year === i && salaries[k].month === j + 1) {
-                tempTotalSalaries = tempTotalSalaries + salaries[k].amount;
-              }
-            }
             if (i == currentYear) {
+              for (var k = 0; k < salaries.length; k++) {
+                if (salaries[k].year === i && salaries[k].month === j + 1) {
+                  tempTotalSalaries = tempTotalSalaries + salaries[k].amount;
+                }
+              }
               if (j <= currentMonth) {
                 salariesMonth.push(tempTotalSalaries);
                 if (j == 0) {
@@ -231,11 +232,8 @@
                   deltaSalariesMonth.push(deltaSalariesMonth[j - 1]);
                 }
               }
-
-              console.log(j, salariesMonth[j]);
+              totalSalaries = totalSalaries + tempTotalSalaries;
             }
-
-            totalSalaries = totalSalaries + tempTotalSalaries;
 
             tempTotalInvoices = 0;
             for (var k = 0; k < invoices.length; k++) {
@@ -363,11 +361,11 @@
             i = 1000;
           }
         }
-        totalSalaries = (totalSalaries / (currentMonth + 1)) * 12;
+        totalEstimatedSalaries = (totalSalaries / (currentMonth + 1)) * 12;
 
         // gestion des données pour les graphes
         let datasetIrObjective = [];
-        if (totalSalaries > totalPrevisionnelIr) {
+        if (totalEstimatedSalaries > totalPrevisionnelIr) {
           datasetIrObjective.push({
             label: "En cours",
             backgroundColor: categoryTypesColor[1],
@@ -380,7 +378,7 @@
             backgroundColor: categoryTypesColor[4],
             borderColor: categoryTypesColor[4],
             borderRadius: 20,
-            data: [(totalSalaries / currentIrObjective) * 100],
+            data: [(totalEstimatedSalaries / currentIrObjective) * 100],
           });
         } else {
           datasetIrObjective.push({
@@ -388,7 +386,7 @@
             backgroundColor: categoryTypesColor[4],
             borderColor: categoryTypesColor[4],
             borderRadius: 20,
-            data: [(totalSalaries / currentIrObjective) * 100],
+            data: [(totalEstimatedSalaries / currentIrObjective) * 100],
           });
           datasetIrObjective.push({
             label: "En cours",
@@ -552,16 +550,47 @@
               {
                 label: "Salaires mensuels",
                 data: salariesMonth,
-                backgroundColor: categoryTypesColor[4],
+                backgroundColor: categoryTypesColor[2],
                 order: 2,
+              },
+              {
+                label: "moyenne",
+                data: [
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                  currentIrObjectiveMonth,
+                ],
+                borderColor: categoryTypesColor[2],
+                borderWidth: 4,
+                borderDash: [10, 5],
+                pointRadius: 0,
+                type: "line",
+                order: 3,
+              },
+              {
+                label: "cible",
+                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                borderColor: categoryTypesColor[8],
+                borderWidth: 4,
+                pointRadius: 0,
+                type: "line",
+                order: 1,
+                yAxisID: "yline",
               },
               {
                 label: "difference",
                 data: deltaSalariesMonth,
-                borderColor: categoryTypesColor[1],
-                pointBackgroundColor: categoryTypesColor[1],
-                pointBorderColor: categoryTypesColor[1],
-                borderWidth: 2,
+                borderColor: categoryTypesColor[0],
+                borderWidth: 4,
                 type: "line",
                 order: 1,
                 yAxisID: "yline",
@@ -588,7 +617,7 @@
         <div>
           <p>Salaire prév.</p>
           <p>
-            {totalSalaries.toLocaleString("fr", {
+            {totalEstimatedSalaries.toLocaleString("fr", {
               maximumFractionDigits: 0,
             })}
           </p>
@@ -693,7 +722,11 @@
     <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
       <div class="grid grid-cols-1 w-full text-center">
         <div>
-          <p>Salaires / Objectif IR</p>
+          <p>
+            Salaires {totalSalaries.toLocaleString("fr", {
+              maximumFractionDigits: 0,
+            })} / Objectif IR {currentIrObjective.toLocaleString("fr")}
+          </p>
         </div>
         <canvas bind:this={chartSalaries} />
       </div>
