@@ -41,6 +41,8 @@
   let OpfdExpenses = [];
 
   let salaries = [];
+  let salariesMonth = [];
+  let deltaSalariesMonth = [];
   let totalSalaries = 0;
   let totalEstimatedSalaries = 0;
 
@@ -138,8 +140,7 @@
     datesGraph = [];
     cashGraph = [];
     cashPessimistGraph = [];
-    let salariesMonth = [];
-    let deltaSalariesMonth = [];
+
     let tempTotalPersoExpenses = 0;
     let tempTotalOpfdExpenses = 0;
     // somme de toutes les factures existantes à venir
@@ -272,18 +273,7 @@
         cashPessimist.push(tempCashPessimist);
         dates.push(tempMois + "/" + i.toString().substring(2, 4));
         // pour le cashGraph, on ne prend que maintenant, 1 mois, 2 mois, 3 mois, 6 mois, 1 an, 2 ans, 3 ans, 4 ans, 5 ans
-        if (
-          tempDateGraph === 0 ||
-          tempDateGraph === 1 ||
-          tempDateGraph === 2 ||
-          tempDateGraph === 3 ||
-          tempDateGraph === 6 ||
-          tempDateGraph === 12 ||
-          tempDateGraph === 24 ||
-          tempDateGraph === 36 ||
-          tempDateGraph === 48 ||
-          tempDateGraph === 60
-        ) {
+        if ([0, 1, 2, 3, 6, 12, 24, 36, 48, 60].includes(tempDateGraph)) {
           cashGraph.push(tempCashGraph);
           cashPessimistGraph.push(tempCashPessimist);
           datesGraph.push(tempMois + "/" + i.toString().substring(2, 4));
@@ -309,20 +299,7 @@
     totalPotentialInvoices = tempTotalCurrentYearInvoices + tempCurrentYearTotalPaidInvoices;
     totalRealizedInvoices = tempCurrentYearTotalPaidInvoices;
     soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
-    cssNeg = "";
-    if (soldeCash < 0) {
-      cssNeg = "text-red-400";
-    }
-    soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
-    cssNeg = "";
-    if (soldeCash < 0) {
-      cssNeg = "text-red-400";
-    }
-    soldeOpfd = totalBankOpfd - totalOpfdExpensesCurrentMonth;
-    cssOpfdNeg = "";
-    if (soldeOpfd < 0) {
-      cssOpfdNeg = "text-red-400";
-    }
+
     dates = dates;
     cashPessimist = cashPessimist;
     cashGraph = cashGraph;
@@ -338,38 +315,33 @@
     }
     totalEstimatedSalaries = (totalSalaries / (currentMonth + 1)) * 12;
 
-    // gestion des données pour les graphes
-    let datasetIrObjective = [];
-    if (totalEstimatedSalaries > totalPrevisionnelIr) {
-      datasetIrObjective.push({
-        label: "En cours",
-        backgroundColor: categoryTypesColor[1],
-        borderColor: categoryTypesColor[1],
-        borderRadius: 20,
-        data: [(totalPrevisionnelIr / currentIrObjective) * 100],
-      });
-      datasetIrObjective.push({
+    showData();
+  }
+
+  function showData() {
+    soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
+    cssNeg = soldeCash < 0 ? "text-red-400" : "";
+    soldeOpfd = totalBankOpfd - totalOpfdExpensesCurrentMonth;
+    cssOpfdNeg = soldeOpfd < 0 ? "text-red-400" : "";
+
+    let datasetIrObjective = [
+      {
         label: "Salaires prév.",
         backgroundColor: categoryTypesColor[4],
         borderColor: categoryTypesColor[4],
         borderRadius: 20,
         data: [(totalEstimatedSalaries / currentIrObjective) * 100],
-      });
-    } else {
-      datasetIrObjective.push({
-        label: "Salaires prév.",
-        backgroundColor: categoryTypesColor[4],
-        borderColor: categoryTypesColor[4],
-        borderRadius: 20,
-        data: [(totalEstimatedSalaries / currentIrObjective) * 100],
-      });
-      datasetIrObjective.push({
+      },
+      {
         label: "En cours",
         backgroundColor: categoryTypesColor[1],
         borderColor: categoryTypesColor[1],
         borderRadius: 20,
         data: [(totalPrevisionnelIr / currentIrObjective) * 100],
-      });
+      },
+    ];
+    if (totalEstimatedSalaries <= totalPrevisionnelIr) {
+      datasetIrObjective.reverse();
     }
     datasetIrObjective.push({
       label: "Objectif",
@@ -378,6 +350,30 @@
       borderRadius: 20,
       data: [100],
     });
+
+    const datasetCaObjective = [
+      {
+        label: "Réalisé",
+        backgroundColor: categoryTypesColor[4],
+        borderColor: categoryTypesColor[4],
+        borderRadius: 20,
+        data: [(totalRealizedInvoices / currentCaObjective) * 100],
+      },
+      {
+        label: "Potentiel",
+        backgroundColor: categoryTypesColor[1],
+        borderColor: categoryTypesColor[1],
+        borderRadius: 20,
+        data: [(totalPotentialInvoices / currentCaObjective) * 100],
+      },
+      {
+        label: "Objectif",
+        backgroundColor: categoryTypesColor[2],
+        borderColor: categoryTypesColor[2],
+        borderRadius: 20,
+        data: [100],
+      },
+    ];
 
     chartIrObjectiveData.destroy();
     chartIrObjectiveData = new chartjs(ctxIrObjective, {
@@ -412,28 +408,6 @@
       },
     });
 
-    let datasetCaObjective = [];
-    datasetCaObjective.push({
-      label: "Réalisé",
-      backgroundColor: categoryTypesColor[4],
-      borderColor: categoryTypesColor[4],
-      borderRadius: 20,
-      data: [(totalRealizedInvoices / currentCaObjective) * 100],
-    });
-    datasetCaObjective.push({
-      label: "Potentiel",
-      backgroundColor: categoryTypesColor[1],
-      borderColor: categoryTypesColor[1],
-      borderRadius: 20,
-      data: [(totalPotentialInvoices / currentCaObjective) * 100],
-    });
-    datasetCaObjective.push({
-      label: "Objectif",
-      backgroundColor: categoryTypesColor[2],
-      borderColor: categoryTypesColor[2],
-      borderRadius: 20,
-      data: [100],
-    });
     chartCaObjectiveData.destroy();
     chartCaObjectiveData = new chartjs(ctxCaObjective, {
       type: "bar",
@@ -599,17 +573,12 @@
       <div class="grid grid-cols-3 w-full text-center">
         <div>
           <p>Salaire prév.</p>
-          <p>
-            {totalEstimatedSalaries.toLocaleString("fr", {
-              maximumFractionDigits: 0,
-            })}
-          </p>
+          <p>{totalEstimatedSalaries.toLocaleString("fr", { maximumFractionDigits: 0 })}</p>
         </div>
         <div>
           <p>IR prév.</p>
           <p>{totalPrevisionnelIr.toLocaleString("fr")}</p>
         </div>
-
         <div>
           <p>Objectif IR</p>
           <p>{currentIrObjective.toLocaleString("fr")}</p>
@@ -619,9 +588,7 @@
       <div class="grid grid-cols-3 w-full text-center mt-2 md:mt-10">
         <div>
           <p>CA réalisé</p>
-          <p>
-            {totalRealizedInvoices.toLocaleString("fr")}
-          </p>
+          <p>{totalRealizedInvoices.toLocaleString("fr")}</p>
         </div>
         <div>
           <p>CA potentiel</p>
@@ -647,7 +614,6 @@
       </div>
       <canvas bind:this={chartCash} />
     </div>
-
     <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
       <div class="text-center mb-5">Synthèse trésorerie mois actuel</div>
       <div class="grid grid-cols-3 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
@@ -655,42 +621,33 @@
           <p>Banques perso</p>
           <p>{totalBankPerso.toLocaleString("fr")}</p>
         </div>
-
         <div class="text-center">
           <p>Dépenses mois</p>
           <p>{totalPersoExpensesCurrentMonth.toLocaleString("fr")}</p>
         </div>
-
         <div class="text-center">
           <p class={cssNeg}>Solde cash</p>
           <p class={cssNeg}>{soldeCash.toLocaleString("fr")}</p>
         </div>
-
         {#each banks as b}
           {#if b.group === "Perso"}
             <div class="text-center">
-              <p>
-                {b.name}
-              </p>
+              <p>{b.name}</p>
               <p>{b.amount.toLocaleString("fr")}</p>
             </div>
           {/if}
         {/each}
         <div class="text-center">
           <p>Salaires du mois</p>
-          <p>
-            {totalSalariesCurrentMonth.toLocaleString("fr")}
-          </p>
+          <p>{totalSalariesCurrentMonth.toLocaleString("fr")}</p>
         </div>
-
         {#each banks as b}
           {#if b.group === "Openfield"}
             <div class="text-center">
-              <p>
-                {b.name}
-              </p>
+              <p>{b.name}</p>
               <p>{b.amount.toLocaleString("fr")}</p>
-            </div>{/if}
+            </div>
+          {/if}
         {/each}
         <div class="text-center">
           <p>Dépenses mois</p>
@@ -706,9 +663,9 @@
       <div class="grid grid-cols-1 w-full text-center">
         <div>
           <p>
-            Salaires {totalSalaries.toLocaleString("fr", {
-              maximumFractionDigits: 0,
-            })} / Objectif IR {currentIrObjective.toLocaleString("fr")}
+            Salaires {totalSalaries.toLocaleString("fr", { maximumFractionDigits: 0 })} / Objectif IR {currentIrObjective.toLocaleString(
+              "fr",
+            )}
           </p>
         </div>
         <canvas bind:this={chartSalaries} />
