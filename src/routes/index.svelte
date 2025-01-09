@@ -82,6 +82,8 @@
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
+  currentYear = 2024;
+  currentMonth = 11;
 
   // données pour la synthèse du cash
   let totalPersoExpensesCurrentMonth = 0;
@@ -591,6 +593,7 @@
                 data: deltaSalariesMonth,
                 borderColor: categoryTypesColor[0],
                 borderWidth: 2,
+                pointRadius: 0,
                 type: "line",
                 order: 1,
                 yAxisID: "yline",
