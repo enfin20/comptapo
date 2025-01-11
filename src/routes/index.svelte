@@ -60,8 +60,8 @@
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
-  currentYear = 2024;
-  currentMonth = 11;
+  // currentYear = 2024;
+  // currentMonth = 11;
 
   // données pour la synthèse du cash
   let totalPersoExpensesCurrentMonth = 0;
@@ -71,8 +71,10 @@
   let cssOpfdNeg = "text-red-400";
   let soldeCash = 0;
   let soldeOpfd = 0;
+  let screenWidth = 0;
 
   onMount(async (promise) => {
+    screenWidth = window.innerWidth;
     loadTables();
     initializeCharts();
   });
@@ -319,6 +321,8 @@
   }
 
   function showData() {
+    const borderFactor = Math.max(screenWidth / 500, 1);
+
     soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
     cssNeg = soldeCash < 0 ? "text-red-400" : "";
     soldeOpfd = totalBankOpfd - totalOpfdExpensesCurrentMonth;
@@ -563,7 +567,7 @@
               currentIrObjectiveMonth,
             ],
             borderColor: categoryTypesColor[2],
-            borderWidth: 3,
+            borderWidth: borderFactor,
             borderDash: [10, 5],
             pointRadius: 0,
             type: "line",
