@@ -349,8 +349,9 @@
     }
     datasetIrObjective.push({
       label: "Objectif",
-      backgroundColor: categoryTypesColor[2],
-      borderColor: categoryTypesColor[2],
+      backgroundColor: "rgba(255, 255, 255, 0)",
+      borderColor: categoryTypesColor[7],
+      borderWidth: borderFactor,
       borderRadius: 20,
       data: [100],
     });
@@ -372,8 +373,9 @@
       },
       {
         label: "Objectif",
-        backgroundColor: categoryTypesColor[2],
-        borderColor: categoryTypesColor[2],
+        backgroundColor: "rgba(255, 255, 255, 0)",
+        borderColor: categoryTypesColor[7],
+        borderWidth: borderFactor,
         borderRadius: 20,
         data: [100],
       },
@@ -492,11 +494,6 @@
           {
             label: "Tréso prévisionnelle",
             data: cashGraph,
-            fill: {
-              target: "origin",
-              above: "rgba(255, 255, 255, 0.08)",
-              below: "rgba(255, 255, 255, 0.08)",
-            },
             borderColor: categoryTypesColor[4],
             pointBackgroundColor: categoryTypesColor[4],
             pointBorderColor: categoryTypesColor[4],
@@ -505,30 +502,41 @@
           {
             label: "Tréso pessimiste",
             data: cashPessimistGraph,
-            fill: {
-              target: "origin",
-              above: "rgba(11, 149, 100, 0.08)",
-              below: "rgba(218, 96, 96, 0.08)",
-            },
-            borderColor: categoryTypesColor[0],
-            pointBackgroundColor: categoryTypesColor[0],
-            pointBorderColor: categoryTypesColor[0],
+            borderColor: categoryTypesColor[7],
+            pointBackgroundColor: categoryTypesColor[7],
+            pointBorderColor: categoryTypesColor[7],
             order: 1,
+          },
+          {
+            label: "cible",
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            borderColor: categoryTypesColor[0],
+            borderDash: [20, 10, 60, 10],
+            borderWidth: 3,
+            pointRadius: 0,
+            type: "line",
+            order: 2,
           },
         ],
       },
       options: {
         tension: 0.3,
         cubicInterpolationMode: "monotone",
-        borderDash: [20, 10, 60, 10],
-        pointRadius: 3,
-        pointHoverRadius: 10,
-        pointHitRadius: 30,
+        //borderDash: [20, 10, 60, 10],
+        borderWidth: 3,
+        pointRadius: 5,
         pointBorderWidth: 2,
-        pointStyle: "rectRounded",
         plugins: {
           legend: {
             display: false,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              display: false, // Masque les valeurs des ticks
+            },
           },
         },
       },
@@ -589,8 +597,6 @@
             borderColor: categoryTypesColor[0],
             borderWidth: 3,
             pointRadius: 5,
-            //           pointHoverRadius: 10,
-            //            pointHitRadius: 30,
             pointBorderWidth: 2,
             //           pointStyle: "rectRounded",
             pointBackgroundColor: "rgba(255, 255, 255, 1)",
@@ -603,7 +609,20 @@
       },
       options: {
         responsive: true,
-        scales: { y: { beginAtZero: true }, yline: { position: "right" } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              display: false, // Masque les valeurs des ticks
+            },
+          },
+          yline: {
+            position: "right",
+            ticks: {
+              display: false, // Masque les valeurs des ticks
+            },
+          },
+        },
         plugins: {
           legend: {
             display: false,
