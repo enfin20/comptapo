@@ -545,7 +545,7 @@
             data: salariesMonth,
             backgroundColor: "rgba(255, 255, 255, 0)",
             borderColor: categoryTypesColor[7], // Border color
-            borderWidth: 3, // Border thickness
+            borderWidth: borderFactor, // Border thickness
             borderRadius: 5, // Optional: Makes corners rounded
             borderSkipped: false, // Ensures the border is drawn on all sides
             order: 2,
