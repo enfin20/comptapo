@@ -389,7 +389,7 @@
             meta.data.forEach((bar) => {
               const { x, y, base, width } = bar;
               // Réduction de la largeur du fond
-              const reduction = Math.max(width * 0.4, 5); // Réduction en pixels
+              const reduction = Math.max(width * 0.4, 10); // Réduction en pixels
               const innerWidth = width - reduction;
               let innerHeight = Math.max(0, base - y - reduction / 2);
 
