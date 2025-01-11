@@ -2,8 +2,7 @@
 </script>
 
 <script>
-  import { date_DD_MM, YYYYMM } from "$lib/date_functions";
-
+  import chartjs from "chart.js/auto";
   import { onMount } from "svelte";
   let statutEnregistrement = "";
 
@@ -28,21 +27,7 @@
   let tableInvoices = [];
 
   let years = [];
-  let months = [
-    "",
-    "JAN",
-    "FEB",
-    "MAR",
-    "APR",
-    "MAY",
-    "JUN",
-    "JUL",
-    "AUG",
-    "SEP",
-    "OCT",
-    "NOV",
-    "DEC",
-  ];
+  let months = ["", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
   let currentYear = new Date().getFullYear();
 
   onMount(async (promise) => {
@@ -161,10 +146,7 @@
         } else {
           tempDate = currentYear.toString().concat(j.toString());
         }
-        if (
-          tableExpenses[i][j]._id !== 0 &&
-          tableExpenses[i][j].value !== tableExpenses[i][j].previousValue
-        ) {
+        if (tableExpenses[i][j]._id !== 0 && tableExpenses[i][j].value !== tableExpenses[i][j].previousValue) {
           res = await fetch("/MDB/opfd", {
             method: "PUT",
             body: JSON.stringify({
@@ -196,10 +178,7 @@
       updateInvoice = false;
       insertInvoice = false;
       for (var i = 0; i < 3; i++) {
-        if (
-          tableInvoices[i][j]._id !== 0 &&
-          tableInvoices[i][j].value !== tableInvoices[i][j].previousValue
-        ) {
+        if (tableInvoices[i][j]._id !== 0 && tableInvoices[i][j].value !== tableInvoices[i][j].previousValue) {
           updateInvoice = true;
         }
         if (tableInvoices[i][j]._id === 0 && tableInvoices[i][j].value !== 0) {
@@ -209,15 +188,11 @@
       // gestion de la coche "payée"
       if (
         tableInvoices[rowPaid][j]._id !== 0 &&
-        tableInvoices[rowPaid][j].value !==
-          tableInvoices[rowPaid][j].previousValue
+        tableInvoices[rowPaid][j].value !== tableInvoices[rowPaid][j].previousValue
       ) {
         updateInvoice = true;
       }
-      if (
-        tableInvoices[rowPaid][j]._id === 0 &&
-        tableInvoices[rowPaid][j].value !== 0
-      ) {
+      if (tableInvoices[rowPaid][j]._id === 0 && tableInvoices[rowPaid][j].value !== 0) {
         insertInvoice = true;
       }
       if (updateInvoice) {
@@ -274,9 +249,7 @@
   <div class="md:m-5">
     <h1 class="text-lg uppercase">Gestion Opfd</h1>
   </div>
-  <div
-    class="grid grid-cols-3 gap-5 w-full md:w-1/3 border-solid hover:border-dotted border-2 rounded m-1 p-1"
-  >
+  <div class="grid grid-cols-3 gap-5 w-full md:w-1/3 border-solid hover:border-dotted border-2 rounded m-1 p-1">
     {#each banks as b}
       <div>
         {b.name}

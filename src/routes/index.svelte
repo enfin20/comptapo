@@ -60,8 +60,8 @@
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
-  //  currentYear = 2024;
-  //  currentMonth = 11;
+  currentYear = 2024;
+  currentMonth = 11;
 
   // données pour la synthèse du cash
   let totalPersoExpensesCurrentMonth = 0;
@@ -375,6 +375,42 @@
       },
     ];
 
+    // Plugin pour réduire la largeur du fond
+    const narrowBackgroundPlugin = {
+      id: "narrowBackground",
+      beforeDatasetsDraw(chart) {
+        const { ctx } = chart;
+
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          // Récupérer les métadonnées du dataset
+          const meta = chart.getDatasetMeta(datasetIndex);
+          // Vérifier que le dataset est de type "bar"
+          if (meta.type === "bar") {
+            meta.data.forEach((bar) => {
+              const { x, y, base, width } = bar;
+              // Réduction de la largeur du fond
+              const reduction = width * 0.4; // Réduction en pixels
+              const innerWidth = width - reduction;
+              let innerHeight = Math.max(0, base - y - reduction / 2);
+
+              // Dessiner manuellement le fond avec une largeur réduite
+              ctx.save();
+              ctx.fillStyle = categoryTypesColor[1]; // Couleur de fond
+              ctx.fillRect(
+                x - innerWidth / 2, // Position horizontale ajustée
+                y + reduction / 2, // Position verticale
+                innerWidth, // Largeur réduite
+                innerHeight, // Hauteur de la barre
+              );
+              ctx.restore();
+            });
+          }
+        });
+      },
+    };
+    // Register the plugin
+    chartjs.register(narrowBackgroundPlugin);
+
     chartIrObjectiveData.destroy();
     chartIrObjectiveData = new chartjs(ctxIrObjective, {
       type: "bar",
@@ -404,6 +440,7 @@
           legend: {
             display: false,
           },
+          narrowBackground: false,
         },
       },
     });
@@ -437,6 +474,7 @@
           legend: {
             display: false,
           },
+          narrowBackground: false,
         },
       },
     });
@@ -501,7 +539,11 @@
           {
             label: "Salaires mensuels",
             data: salariesMonth,
-            backgroundColor: categoryTypesColor[2],
+            backgroundColor: "rgba(255, 255, 255, 0)",
+            borderColor: categoryTypesColor[7], // Border color
+            borderWidth: 3, // Border thickness
+            borderRadius: 5, // Optional: Makes corners rounded
+            borderSkipped: false, // Ensures the border is drawn on all sides
             order: 2,
           },
           {
@@ -521,7 +563,7 @@
               currentIrObjectiveMonth,
             ],
             borderColor: categoryTypesColor[2],
-            borderWidth: 2,
+            borderWidth: 3,
             borderDash: [10, 5],
             pointRadius: 0,
             type: "line",
@@ -531,7 +573,7 @@
             label: "cible",
             data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             borderColor: categoryTypesColor[8],
-            borderWidth: 2,
+            borderWidth: 3,
             pointRadius: 0,
             type: "line",
             order: 1,
@@ -541,13 +583,13 @@
             label: "difference",
             data: deltaSalariesMonth,
             borderColor: categoryTypesColor[0],
-            borderWidth: 2,
-            pointRadius: 3,
-            pointHoverRadius: 10,
-            pointHitRadius: 30,
+            borderWidth: 3,
+            pointRadius: 5,
+            //           pointHoverRadius: 10,
+            //            pointHitRadius: 30,
             pointBorderWidth: 2,
-            pointStyle: "rectRounded",
-            pointBackgroundColor: categoryTypesColor[0],
+            //           pointStyle: "rectRounded",
+            pointBackgroundColor: "rgba(255, 255, 255, 1)",
             pointBorderColor: categoryTypesColor[0],
             type: "line",
             order: 1,
@@ -556,11 +598,13 @@
         ],
       },
       options: {
+        responsive: true,
         scales: { y: { beginAtZero: true }, yline: { position: "right" } },
         plugins: {
           legend: {
             display: false,
           },
+          narrowBackground: true,
         },
       },
     });
