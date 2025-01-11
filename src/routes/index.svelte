@@ -321,7 +321,7 @@
   }
 
   function showData() {
-    const borderFactor = Math.max(screenWidth / 500, 1);
+    const borderFactor = Math.max(screenWidth / 500, 2);
 
     soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
     cssNeg = soldeCash < 0 ? "text-red-400" : "";
@@ -399,7 +399,7 @@
 
               // Dessiner manuellement le fond avec une largeur réduite
               ctx.save();
-              ctx.fillStyle = categoryTypesColor[1]; // Couleur de fond
+              ctx.fillStyle = categoryTypesColor[8]; // Couleur de fond
               ctx.fillRect(
                 x - innerWidth / 2, // Position horizontale ajustée
                 y + reduction / 2, // Position verticale

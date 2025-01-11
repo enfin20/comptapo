@@ -7,7 +7,7 @@
     purple: "rgb(153, 102, 255)",
     grey: "rgb(101, 103, 107)",
     grey2: "rgb(153, 192, 192)",
-    pct: "rgb(0, 110, 118)",
+    pct: "rgba(0, 110, 118, 0.5)",
   };
  export const categoryTypesColor = [
     CHART_COLORS.red,
