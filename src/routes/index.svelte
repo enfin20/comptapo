@@ -332,14 +332,20 @@
       {
         label: "Salaires prév.",
         backgroundColor: categoryTypesColor[4],
-        borderColor: categoryTypesColor[4],
+        borderColor: "rgba(255, 255, 255, 0)",
+        borderWidth: borderFactor,
+        borderSkipped: false, // Ensures the border is drawn on all sides
+
         borderRadius: 20,
         data: [(totalEstimatedSalaries / currentIrObjective) * 100],
       },
       {
         label: "En cours",
         backgroundColor: categoryTypesColor[1],
-        borderColor: categoryTypesColor[1],
+        borderColor: "rgba(255, 255, 255, 0)",
+        borderWidth: borderFactor,
+        borderSkipped: false, // Ensures the border is drawn on all sides
+
         borderRadius: 20,
         data: [(totalPrevisionnelIr / currentIrObjective) * 100],
       },
@@ -353,24 +359,12 @@
       borderColor: categoryTypesColor[7],
       borderWidth: borderFactor,
       borderRadius: 20,
+      borderSkipped: false,
       data: [100],
     });
+    datasetIrObjective.reverse();
 
     const datasetCaObjective = [
-      {
-        label: "Réalisé",
-        backgroundColor: categoryTypesColor[4],
-        borderColor: categoryTypesColor[4],
-        borderRadius: 20,
-        data: [(totalRealizedInvoices / currentCaObjective) * 100],
-      },
-      {
-        label: "Potentiel",
-        backgroundColor: categoryTypesColor[1],
-        borderColor: categoryTypesColor[1],
-        borderRadius: 20,
-        data: [(totalPotentialInvoices / currentCaObjective) * 100],
-      },
       {
         label: "Objectif",
         backgroundColor: "rgba(255, 255, 255, 0)",
@@ -378,6 +372,26 @@
         borderWidth: borderFactor,
         borderRadius: 20,
         data: [100],
+        borderSkipped: false, // Ensures the border is drawn on all sides
+      },
+      {
+        label: "Potentiel",
+        backgroundColor: categoryTypesColor[1],
+        borderColor: "rgba(255, 255, 255, 0)",
+        borderWidth: borderFactor,
+        borderSkipped: false, // Ensures the border is drawn on all sides
+
+        borderRadius: 20,
+        data: [(totalPotentialInvoices / currentCaObjective) * 100],
+      },
+      {
+        label: "Réalisé",
+        backgroundColor: categoryTypesColor[4],
+        borderColor: "rgba(255, 255, 255, 0)",
+        borderWidth: borderFactor,
+        borderRadius: 20,
+        borderSkipped: false, // Ensures the border is drawn on all sides
+        data: [(totalRealizedInvoices / currentCaObjective) * 100],
       },
     ];
 
@@ -494,17 +508,19 @@
           {
             label: "Tréso prévisionnelle",
             data: cashGraph,
-            borderColor: categoryTypesColor[4],
-            pointBackgroundColor: categoryTypesColor[4],
-            pointBorderColor: categoryTypesColor[4],
+            borderColor: categoryTypesColor[1],
+            pointBackgroundColor: "rgba(255, 255, 255, 1)",
+            pointBorderColor: categoryTypesColor[1],
+            borderWidth: 3,
             order: 2,
           },
           {
             label: "Tréso pessimiste",
             data: cashPessimistGraph,
             borderColor: categoryTypesColor[7],
-            pointBackgroundColor: categoryTypesColor[7],
+            pointBackgroundColor: "rgba(255, 255, 255, 1)",
             pointBorderColor: categoryTypesColor[7],
+            borderWidth: 3,
             order: 1,
           },
           {
@@ -594,13 +610,13 @@
           {
             label: "difference",
             data: deltaSalariesMonth,
-            borderColor: categoryTypesColor[0],
+            borderColor: categoryTypesColor[1],
             borderWidth: 3,
             pointRadius: 5,
             pointBorderWidth: 2,
             //           pointStyle: "rectRounded",
             pointBackgroundColor: "rgba(255, 255, 255, 1)",
-            pointBorderColor: categoryTypesColor[0],
+            pointBorderColor: categoryTypesColor[1],
             type: "line",
             order: 1,
             yAxisID: "yline",
