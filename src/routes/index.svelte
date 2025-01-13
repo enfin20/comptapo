@@ -60,8 +60,8 @@
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
-  currentYear = 2024;
-  currentMonth = 11;
+  // currentYear = 2024;
+  // currentMonth = 11;
 
   // données pour la synthèse du cash
   let totalPersoExpensesCurrentMonth = 0;
