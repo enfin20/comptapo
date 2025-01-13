@@ -8,21 +8,21 @@
 
   // variables pour le dashboard
 
-  let chartIrObjective;
-  let ctxIrObjective;
-  var chartIrObjectiveData = [];
+  let chartIrObjective = null;
+  let ctxIrObjective = null;
+  var chartIrObjectiveData = null;
 
-  let chartCaObjective;
-  let ctxCaObjective;
-  var chartCaObjectiveData = [];
+  let chartCaObjective = null;
+  let ctxCaObjective = null;
+  var chartCaObjectiveData = null;
 
-  let chartCash;
-  let ctxCash;
-  var chartCashData = [];
+  let chartCash = null;
+  let ctxCash = null;
+  var chartCashData = null;
 
-  let chartSalaries;
-  let ctxSalaries;
-  var chartSalariesData = [];
+  let chartSalaries = null;
+  let ctxSalaries = null;
+  var chartSalariesData = null;
 
   let dates = [""];
 
@@ -75,6 +75,7 @@
 
   onMount(async (promise) => {
     screenWidth = window.innerWidth;
+
     loadTables();
     initializeCharts();
   });
@@ -321,7 +322,7 @@
   }
 
   function showData() {
-    const borderFactor = Math.max(screenWidth / 500, 2);
+    const borderFactor = Math.min(Math.max(screenWidth / 500, 2), 3);
 
     soldeCash = totalBankPerso - totalPersoExpensesCurrentMonth;
     cssNeg = soldeCash < 0 ? "text-red-400" : "";
@@ -670,109 +671,108 @@
   }
 </script>
 
-<div class="grid grid-cols-1 w-full">
-  <div class="grid grid-cols-1 md:grid-cols-2 w-full">
-    <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-      <div class="grid grid-cols-3 w-full text-center">
-        <div>
-          <p>Salaire prév.</p>
-          <p>{totalEstimatedSalaries.toLocaleString("fr", { maximumFractionDigits: 0 })}</p>
-        </div>
-        <div>
-          <p>IR prév.</p>
-          <p>{totalPrevisionnelIr.toLocaleString("fr")}</p>
-        </div>
-        <div>
-          <p>Objectif IR</p>
-          <p>{currentIrObjective.toLocaleString("fr")}</p>
-        </div>
+<div class="grid grid-cols-1 md:grid-cols-4 w-full">
+  <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
+    <div class="text-center mb-5">Synthèse trésorerie mois actuel</div>
+    <div class="grid grid-cols-3 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
+      <div class="text-center">
+        <p>Banques perso</p>
+        <p>{totalBankPerso.toLocaleString("fr")}</p>
       </div>
-      <canvas bind:this={chartIrObjective} height="50px" />
-      <div class="grid grid-cols-3 w-full text-center mt-2 md:mt-10">
-        <div>
-          <p>CA réalisé</p>
-          <p>{totalRealizedInvoices.toLocaleString("fr")}</p>
-        </div>
-        <div>
-          <p>CA potentiel</p>
-          <p>{totalPotentialInvoices.toLocaleString("fr")}</p>
-        </div>
-        <div>
-          <p>Objectif CA</p>
-          <p>{currentCaObjective.toLocaleString("fr")}</p>
-        </div>
+      <div class="text-center">
+        <p>Dépenses mois</p>
+        <p>{totalPersoExpensesCurrentMonth.toLocaleString("fr")}</p>
       </div>
-      <canvas bind:this={chartCaObjective} height="50px" />
-    </div>
-    <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-      <div class="grid grid-cols-2 w-full text-center">
-        <div>
-          <p>Trésorerie actuelle</p>
-          <p>{Number(cashPessimist[1]).toLocaleString("fr")}</p>
-        </div>
-        <div>
-          <p>Négative (pessimiste) en</p>
-          <p>{monthPessimist}</p>
-        </div>
+      <div class="text-center">
+        <p class={cssNeg}>Solde cash</p>
+        <p class={cssNeg}>{soldeCash.toLocaleString("fr")}</p>
       </div>
-      <canvas bind:this={chartCash} />
-    </div>
-    <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-      <div class="text-center mb-5">Synthèse trésorerie mois actuel</div>
-      <div class="grid grid-cols-3 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
-        <div class="text-center">
-          <p>Banques perso</p>
-          <p>{totalBankPerso.toLocaleString("fr")}</p>
-        </div>
-        <div class="text-center">
-          <p>Dépenses mois</p>
-          <p>{totalPersoExpensesCurrentMonth.toLocaleString("fr")}</p>
-        </div>
-        <div class="text-center">
-          <p class={cssNeg}>Solde cash</p>
-          <p class={cssNeg}>{soldeCash.toLocaleString("fr")}</p>
-        </div>
-        {#each banks as b}
-          {#if b.group === "Perso"}
-            <div class="text-center">
-              <p>{b.name}</p>
-              <p>{b.amount.toLocaleString("fr")}</p>
-            </div>
-          {/if}
-        {/each}
-        <div class="text-center">
-          <p>Salaires du mois</p>
-          <p>{totalSalariesCurrentMonth.toLocaleString("fr")}</p>
-        </div>
-        {#each banks as b}
-          {#if b.group === "Openfield"}
-            <div class="text-center">
-              <p>{b.name}</p>
-              <p>{b.amount.toLocaleString("fr")}</p>
-            </div>
-          {/if}
-        {/each}
-        <div class="text-center">
-          <p>Dépenses mois</p>
-          <p>{totalOpfdExpensesCurrentMonth.toLocaleString("fr")}</p>
-        </div>
-        <div class="text-center">
-          <p class={cssOpfdNeg}>Solde cash</p>
-          <p class={cssOpfdNeg}>{soldeOpfd.toLocaleString("fr")}</p>
-        </div>
+      {#each banks as b}
+        {#if b.group === "Perso"}
+          <div class="text-center">
+            <p>{b.name}</p>
+            <p>{b.amount.toLocaleString("fr")}</p>
+          </div>
+        {/if}
+      {/each}
+      <div class="text-center">
+        <p>Salaires du mois</p>
+        <p>{totalSalariesCurrentMonth.toLocaleString("fr")}</p>
+      </div>
+      {#each banks as b}
+        {#if b.group === "Openfield"}
+          <div class="text-center">
+            <p>{b.name}</p>
+            <p>{b.amount.toLocaleString("fr")}</p>
+          </div>
+        {/if}
+      {/each}
+      <div class="text-center">
+        <p>Dépenses mois</p>
+        <p>{totalOpfdExpensesCurrentMonth.toLocaleString("fr")}</p>
+      </div>
+      <div class="text-center">
+        <p class={cssOpfdNeg}>Solde cash</p>
+        <p class={cssOpfdNeg}>{soldeOpfd.toLocaleString("fr")}</p>
       </div>
     </div>
-    <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-      <div class="grid grid-cols-1 w-full text-center">
-        <div>
-          <p>
-            Salaires {totalSalaries.toLocaleString("fr", { maximumFractionDigits: 0 })} / Objectif IR {currentIrObjective.toLocaleString(
-              "fr",
-            )}
-          </p>
-        </div>
-        <canvas bind:this={chartSalaries} />
+  </div>
+  <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
+    <div class="grid grid-cols-3 w-full text-center">
+      <div>
+        <p>Salaire prév.</p>
+        <p>{totalEstimatedSalaries.toLocaleString("fr", { maximumFractionDigits: 0 })}</p>
       </div>
+      <div>
+        <p>IR prév.</p>
+        <p>{totalPrevisionnelIr.toLocaleString("fr")}</p>
+      </div>
+      <div>
+        <p>Objectif IR</p>
+        <p>{currentIrObjective.toLocaleString("fr")}</p>
+      </div>
+    </div>
+    <canvas bind:this={chartIrObjective} height="50px" />
+    <div class="grid grid-cols-3 w-full text-center mt-2 md:mt-10">
+      <div>
+        <p>CA réalisé</p>
+        <p>{totalRealizedInvoices.toLocaleString("fr")}</p>
+      </div>
+      <div>
+        <p>CA potentiel</p>
+        <p>{totalPotentialInvoices.toLocaleString("fr")}</p>
+      </div>
+      <div>
+        <p>Objectif CA</p>
+        <p>{currentCaObjective.toLocaleString("fr")}</p>
+      </div>
+    </div>
+    <canvas bind:this={chartCaObjective} height="50px" />
+  </div>
+  <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
+    <div class="grid grid-cols-2 w-full text-center">
+      <div>
+        <p>Trésorerie actuelle</p>
+        <p>{Number(cashPessimist[1]).toLocaleString("fr")}</p>
+      </div>
+      <div>
+        <p>Négative (pessimiste) en</p>
+        <p>{monthPessimist}</p>
+      </div>
+    </div>
+    <canvas bind:this={chartCash} />
+  </div>
+
+  <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
+    <div class="grid grid-cols-1 w-full text-center">
+      <div>
+        <p>
+          Salaires {totalSalaries.toLocaleString("fr", { maximumFractionDigits: 0 })} / Objectif IR {currentIrObjective.toLocaleString(
+            "fr",
+          )}
+        </p>
+      </div>
+      <canvas bind:this={chartSalaries} />
     </div>
   </div>
 </div>
