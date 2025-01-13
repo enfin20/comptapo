@@ -60,7 +60,7 @@
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
-  // currentYear = 2024;
+  //  currentYear = 2024;
   // currentMonth = 11;
 
   // données pour la synthèse du cash
@@ -394,7 +394,15 @@
         data: [(totalRealizedInvoices / currentCaObjective) * 100],
       },
     ];
-
+    const barThickness = {
+      id: "barThickness",
+      beforeDatasetsDraw(chart) {
+        chart.getDatasetMeta(1).data[0].height = chart.getDatasetMeta(0).data[0].height * 0.8;
+        chart.getDatasetMeta(2).data[0].height = chart.getDatasetMeta(0).data[0].height * 0.8;
+      },
+    };
+    // Register the plugin
+    chartjs.register(barThickness);
     // Plugin pour réduire la largeur du fond
     const narrowBackgroundPlugin = {
       id: "narrowBackground",
@@ -461,6 +469,7 @@
             display: false,
           },
           narrowBackground: false,
+          barThickness: true,
         },
       },
     });
@@ -495,6 +504,7 @@
             display: false,
           },
           narrowBackground: false,
+          barThickness: true,
         },
       },
     });
@@ -546,6 +556,7 @@
           legend: {
             display: false,
           },
+          barThickness: false,
         },
         scales: {
           y: {
@@ -644,6 +655,7 @@
             display: false,
           },
           narrowBackground: true,
+          barThickness: false,
         },
       },
     });

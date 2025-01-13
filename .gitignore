@@ -7,3 +7,4 @@ node_modules
 .env.*
 src/lib/db.js
 .vscode/launch.json
+src/routes/affiche/index.svelte
