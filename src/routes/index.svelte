@@ -60,8 +60,8 @@
 
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
-  //  currentYear = 2024;
-  // currentMonth = 11;
+  currentYear = 2024;
+  currentMonth = 11;
 
   // données pour la synthèse du cash
   let totalPersoExpensesCurrentMonth = 0;
@@ -415,22 +415,24 @@
           const meta = chart.getDatasetMeta(datasetIndex);
           // Vérifier que le dataset est de type "bar"
           if (meta.type === "bar") {
-            meta.data.forEach((bar) => {
+            meta.data.forEach((bar, index) => {
               const { x, y, base, width } = bar;
               // Réduction de la largeur du fond
               const reduction = Math.max(width * 0.4, 10); // Réduction en pixels
               const innerWidth = width - reduction;
-              let innerHeight = Math.max(0, base - y - reduction / 2);
+              const previousY = y;
+              let innerHeight = Math.max(0, base - previousY - reduction / 2);
 
               // Dessiner manuellement le fond avec une largeur réduite
               ctx.save();
               ctx.fillStyle = categoryTypesColor[8]; // Couleur de fond
               ctx.fillRect(
                 x - innerWidth / 2, // Position horizontale ajustée
-                y + reduction / 2, // Position verticale
+                previousY + reduction / 2, // Position verticale
                 innerWidth, // Largeur réduite
                 innerHeight, // Hauteur de la barre
               );
+
               ctx.restore();
             });
           }
@@ -595,7 +597,7 @@
             order: 2,
           },
           {
-            label: "moyenne",
+            label: "objectif",
             data: [
               currentIrObjectiveMonth,
               currentIrObjectiveMonth,
@@ -610,7 +612,7 @@
               currentIrObjectiveMonth,
               currentIrObjectiveMonth,
             ],
-            borderColor: categoryTypesColor[2],
+            borderColor: categoryTypesColor[7],
             borderWidth: borderFactor,
             borderDash: [10, 5],
             pointRadius: 0,
@@ -620,7 +622,7 @@
           {
             label: "cible",
             data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            borderColor: categoryTypesColor[8],
+            borderColor: categoryTypesColor[0],
             borderWidth: 3,
             pointRadius: 0,
             type: "line",
