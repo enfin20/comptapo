@@ -452,7 +452,9 @@
         scales: {
           x: {
             stacked: false,
-
+            grid: {
+              display: false,
+            },
             ticks: {
               min: 0,
               max: 130,
@@ -471,6 +473,8 @@
           narrowBackground: false,
           barThickness: true,
         },
+        barPercentage: 1,
+        categoryPercentage: 1,
       },
     });
 
@@ -487,7 +491,9 @@
         scales: {
           x: {
             stacked: false,
-
+            grid: {
+              display: false,
+            },
             ticks: {
               min: 0,
               max: 130,
@@ -506,6 +512,8 @@
           narrowBackground: false,
           barThickness: true,
         },
+        barPercentage: 1,
+        categoryPercentage: 1,
       },
     });
 
