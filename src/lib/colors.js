@@ -8,6 +8,8 @@
     grey: "rgb(101, 103, 107)",
     grey2: "rgb(153, 192, 192)",
     pct: "rgba(0, 110, 118, 0.5)",
+    blue2: "rgba(54, 162, 235, 0.5)",
+
   };
  export const categoryTypesColor = [
     CHART_COLORS.red,
@@ -19,5 +21,5 @@
     CHART_COLORS.yellow,
     CHART_COLORS.grey,
     CHART_COLORS.pct,
-    "rgb(255, 99, 132)",
+    CHART_COLORS.blue2,
   ];

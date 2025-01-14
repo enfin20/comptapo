@@ -24,9 +24,19 @@
   let ctxSalaries = null;
   var chartSalariesData = null;
 
+  let chartMonthPerso = null;
+  let ctxMonthPerso = null;
+  var chartMonthPersoData = null;
+
+  let chartMonthOpfd = null;
+  let ctxMonthOpfd = null;
+  var chartMonthOpfdData = null;
+
   let dates = [""];
 
   let banks = [];
+  let banksPerso = [];
+  let banksOpfd = [];
   let totalBank = 0;
   let totalBankPerso = 0;
   let totalBankOpfd = 0;
@@ -92,6 +102,12 @@
 
     ctxSalaries = chartSalaries.getContext("2d");
     chartSalariesData = new chartjs(ctxSalaries, {});
+
+    ctxMonthPerso = chartMonthPerso.getContext("2d");
+    chartMonthPersoData = new chartjs(ctxMonthPerso, {});
+
+    ctxMonthOpfd = chartMonthOpfd.getContext("2d");
+    chartMonthOpfdData = new chartjs(ctxMonthOpfd, {});
   }
 
   async function loadTables() {
@@ -126,8 +142,10 @@
       totalBank = totalBank + banks[i].amount;
       if (banks[i].group === "Perso") {
         totalBankPerso = totalBankPerso + banks[i].amount;
+        banksPerso.push(banks[i].amount);
       } else {
         totalBankOpfd = totalBankPerso + banks[i].amount;
+        banksOpfd.push(banks[i].amount);
       }
     }
     // pour le graph
@@ -395,6 +413,7 @@
         data: [(totalRealizedInvoices / currentCaObjective) * 100],
       },
     ];
+
     const barThickness = {
       id: "barThickness",
       beforeDatasetsDraw(chart) {
@@ -455,9 +474,7 @@
         scales: {
           x: {
             stacked: false,
-            grid: {
-              display: false,
-            },
+            display: false,
             ticks: {
               min: 0,
               max: 130,
@@ -475,6 +492,7 @@
           },
           narrowBackground: false,
           barThickness: true,
+          singleBorderPlugin: false,
         },
         barPercentage: 1,
         categoryPercentage: 1,
@@ -494,9 +512,7 @@
         scales: {
           x: {
             stacked: false,
-            grid: {
-              display: false,
-            },
+            display: false,
             ticks: {
               min: 0,
               max: 130,
@@ -514,6 +530,7 @@
           },
           narrowBackground: false,
           barThickness: true,
+          singleBorderPlugin: false,
         },
         barPercentage: 1,
         categoryPercentage: 1,
@@ -568,6 +585,7 @@
             display: false,
           },
           barThickness: false,
+          singleBorderPlugin: false,
         },
         scales: {
           y: {
@@ -576,6 +594,91 @@
               display: false, // Masque les valeurs des ticks
             },
           },
+        },
+      },
+    });
+
+    chartMonthPersoData.destroy();
+    chartMonthPersoData = new chartjs(ctxMonthPerso, {
+      type: "bar",
+      data: {
+        labels: ["Dépenses", "Banques"],
+        datasets: [
+          {
+            label: "Dépenses",
+            data: [totalPersoExpensesCurrentMonth],
+            backgroundColor: categoryTypesColor[1], // Border color
+          },
+          {
+            label: banks[1].name,
+            data: [banks[1].amount],
+            backgroundColor: categoryTypesColor[4],
+            stack: "cumulative",
+          },
+          {
+            label: banks[2].name,
+            data: [banks[2].amount],
+            backgroundColor: categoryTypesColor[9], // Border color
+            stack: "cumulative",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            display: false, // Masque les valeurs des ticks
+          },
+          y: {
+            display: false, // Masque les valeurs des ticks
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          narrowBackground: false,
+          barThickness: false,
+          singleBorderPlugin: true,
+        },
+      },
+    });
+
+    chartMonthOpfdData.destroy();
+    chartMonthOpfdData = new chartjs(ctxMonthOpfd, {
+      type: "bar",
+      data: {
+        labels: ["Dépenses", "Banques"],
+        datasets: [
+          {
+            label: "Dépenses",
+            data: [totalOpfdExpensesCurrentMonth],
+            backgroundColor: categoryTypesColor[1], // Border color
+          },
+          {
+            label: banks[0].name,
+            data: [banks[0].amount],
+            backgroundColor: categoryTypesColor[4],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            display: false, // Masque les valeurs des ticks
+          },
+          y: {
+            display: false, // Masque les valeurs des ticks
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          narrowBackground: false,
+          barThickness: false,
+          singleBorderPlugin: false,
         },
       },
     });
@@ -667,6 +770,7 @@
           },
           narrowBackground: true,
           barThickness: false,
+          singleBorderPlugin: false,
         },
       },
     });
@@ -675,47 +779,21 @@
 
 <div class="grid grid-cols-1 md:grid-cols-4 w-full">
   <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-    <div class="text-center mb-5">Synthèse trésorerie mois actuel</div>
-    <div class="grid grid-cols-3 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
+    <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
+      <canvas bind:this={chartMonthPerso} height="50px" />
       <div class="text-center">
-        <p>Banques perso</p>
-        <p>{totalBankPerso.toLocaleString("fr")}</p>
+        <p class={cssNeg}><b>Solde cash</b></p>
+        <p class={cssNeg}><b>{soldeCash.toLocaleString("fr")}</b></p>
       </div>
+    </div>
+    <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
+      <p>&nbsp;</p>
+    </div>
+    <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-4 font-normal">
+      <canvas bind:this={chartMonthOpfd} height="50px" />
       <div class="text-center">
-        <p>Dépenses mois</p>
-        <p>{totalPersoExpensesCurrentMonth.toLocaleString("fr")}</p>
-      </div>
-      <div class="text-center">
-        <p class={cssNeg}>Solde cash</p>
-        <p class={cssNeg}>{soldeCash.toLocaleString("fr")}</p>
-      </div>
-      {#each banks as b}
-        {#if b.group === "Perso"}
-          <div class="text-center">
-            <p>{b.name}</p>
-            <p>{b.amount.toLocaleString("fr")}</p>
-          </div>
-        {/if}
-      {/each}
-      <div class="text-center">
-        <p>Salaires du mois</p>
-        <p>{totalSalariesCurrentMonth.toLocaleString("fr")}</p>
-      </div>
-      {#each banks as b}
-        {#if b.group === "Openfield"}
-          <div class="text-center">
-            <p>{b.name}</p>
-            <p>{b.amount.toLocaleString("fr")}</p>
-          </div>
-        {/if}
-      {/each}
-      <div class="text-center">
-        <p>Dépenses mois</p>
-        <p>{totalOpfdExpensesCurrentMonth.toLocaleString("fr")}</p>
-      </div>
-      <div class="text-center">
-        <p class={cssOpfdNeg}>Solde cash</p>
-        <p class={cssOpfdNeg}>{soldeOpfd.toLocaleString("fr")}</p>
+        <p class={cssOpfdNeg}><b>Solde cash</b></p>
+        <p class={cssOpfdNeg}><b>{soldeOpfd.toLocaleString("fr")}</b></p>
       </div>
     </div>
   </div>
@@ -734,7 +812,7 @@
         <p>{currentIrObjective.toLocaleString("fr")}</p>
       </div>
     </div>
-    <canvas bind:this={chartIrObjective} height="50px" />
+    <canvas bind:this={chartIrObjective} height="40px" />
     <div class="grid grid-cols-3 w-full text-center mt-2 md:mt-10">
       <div>
         <p>CA réalisé</p>
@@ -749,7 +827,7 @@
         <p>{currentCaObjective.toLocaleString("fr")}</p>
       </div>
     </div>
-    <canvas bind:this={chartCaObjective} height="50px" />
+    <canvas bind:this={chartCaObjective} height="40px" />
   </div>
   <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
     <div class="grid grid-cols-2 w-full text-center">
@@ -764,15 +842,15 @@
     </div>
     <canvas bind:this={chartCash} />
   </div>
-
   <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
-    <div class="grid grid-cols-1 w-full text-center">
+    <div class="grid grid-cols-2 w-full text-center">
       <div>
-        <p>
-          Salaires {totalSalaries.toLocaleString("fr", { maximumFractionDigits: 0 })} / Objectif IR {currentIrObjective.toLocaleString(
-            "fr",
-          )}
-        </p>
+        <p>Salaires</p>
+        <p>{totalSalaries.toLocaleString("fr", { maximumFractionDigits: 0 })}</p>
+      </div>
+      <div>
+        <p>Objectif IR</p>
+        <p>{currentIrObjective.toLocaleString("fr")}</p>
       </div>
       <canvas bind:this={chartSalaries} />
     </div>
