@@ -492,7 +492,6 @@
           },
           narrowBackground: false,
           barThickness: true,
-          singleBorderPlugin: false,
         },
         barPercentage: 1,
         categoryPercentage: 1,
@@ -530,7 +529,6 @@
           },
           narrowBackground: false,
           barThickness: true,
-          singleBorderPlugin: false,
         },
         barPercentage: 1,
         categoryPercentage: 1,
@@ -585,7 +583,6 @@
             display: false,
           },
           barThickness: false,
-          singleBorderPlugin: false,
         },
         scales: {
           y: {
@@ -639,7 +636,6 @@
           },
           narrowBackground: false,
           barThickness: false,
-          singleBorderPlugin: true,
         },
       },
     });
@@ -678,7 +674,6 @@
           },
           narrowBackground: false,
           barThickness: false,
-          singleBorderPlugin: false,
         },
       },
     });
@@ -770,7 +765,6 @@
           },
           narrowBackground: true,
           barThickness: false,
-          singleBorderPlugin: false,
         },
       },
     });
