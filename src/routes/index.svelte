@@ -423,6 +423,43 @@
     };
     // Register the plugin
     chartjs.register(barThickness);
+
+    const MonthOpfd = {
+      id: "MonthOpfd",
+      //       console.log("MonthOpfd 0", chart.getDatasetMeta(0).data[0]);
+      //        console.log("MonthOpfd 1", chart.getDatasetMeta(1).data[0]);
+      beforeDatasetsDraw(chart) {
+        const { ctx } = chart;
+
+        chart.data.datasets.forEach((_, datasetIndex) => {
+          // Récupérer les métadonnées du dataset
+          const meta = chart.getDatasetMeta(datasetIndex);
+
+          meta.data.forEach((bar) => {
+            const { x, y, base, width } = bar;
+            // Réduction de la largeur du fond
+            const reduction = Math.max(width * 0.2, 10); // Réduction en pixels
+            const innerWidth = width - reduction;
+            const previousY = y;
+            let innerHeight = Math.max(0, base - previousY - reduction / 2);
+            // Dessiner manuellement le fond avec une largeur réduite
+            ctx.save();
+            ctx.fillStyle = datasetIndex === 0 ? categoryTypesColor[1] : categoryTypesColor[9]; // Couleur de fond
+            ctx.fillRect(
+              x - innerWidth / 2, // Position horizontale ajustée
+              previousY + reduction / 2, // Position verticale
+              innerWidth, // Largeur réduite
+              innerHeight, // Hauteur de la barre
+            );
+
+            ctx.restore();
+          });
+        });
+      },
+    };
+    // Register the plugin
+    chartjs.register(MonthOpfd);
+
     // Plugin pour réduire la largeur du fond
     const narrowBackgroundPlugin = {
       id: "narrowBackground",
@@ -492,6 +529,7 @@
           },
           narrowBackground: false,
           barThickness: true,
+          MonthOpfd: false,
         },
         barPercentage: 1,
         categoryPercentage: 1,
@@ -529,6 +567,7 @@
           },
           narrowBackground: false,
           barThickness: true,
+          MonthOpfd: false,
         },
         barPercentage: 1,
         categoryPercentage: 1,
@@ -583,6 +622,7 @@
             display: false,
           },
           barThickness: false,
+          MonthOpfd: false,
         },
         scales: {
           x: { grid: { display: false } },
@@ -601,7 +641,7 @@
     chartMonthPersoData = new chartjs(ctxMonthPerso, {
       type: "bar",
       data: {
-        labels: ["Dépenses", "Banques"],
+        labels: ["Perso", ""],
         datasets: [
           {
             label: "Dépenses",
@@ -638,6 +678,7 @@
           },
           narrowBackground: false,
           barThickness: false,
+          MonthOpfd: false,
         },
       },
     });
@@ -646,17 +687,25 @@
     chartMonthOpfdData = new chartjs(ctxMonthOpfd, {
       type: "bar",
       data: {
-        labels: ["Dépenses", "Banques"],
+        labels: ["Opfd", ""],
         datasets: [
           {
             label: "Dépenses",
-            data: [totalOpfdExpensesCurrentMonth],
-            backgroundColor: categoryTypesColor[1], // Border color
+            data: [140000], //[totalOpfdExpensesCurrentMonth],
+            backgroundColor: "rgba(255, 255, 255, 0)",
+            borderColor: categoryTypesColor[7], // Border color
+            borderWidth: borderFactor, // Border thickness
+            borderRadius: 5, // Optional: Makes corners rounded
+            borderSkipped: false, // Ensures the border is drawn on all sides
           },
           {
-            label: banks[0].name,
+            label: "Banque",
             data: [banks[0].amount],
-            backgroundColor: categoryTypesColor[4],
+            backgroundColor: "rgba(255, 255, 255, 0)",
+            borderColor: categoryTypesColor[7], // Border color
+            borderWidth: borderFactor, // Border thickness
+            borderRadius: 5, // Optional: Makes corners rounded
+            borderSkipped: false, // Ensures the border is drawn on all sides
           },
         ],
       },
@@ -676,6 +725,7 @@
           },
           narrowBackground: false,
           barThickness: false,
+          MonthOpfd: true,
         },
       },
     });
@@ -770,6 +820,7 @@
           },
           narrowBackground: true,
           barThickness: false,
+          MonthOpfd: false,
         },
       },
     });
