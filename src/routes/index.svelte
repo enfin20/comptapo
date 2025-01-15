@@ -5,6 +5,7 @@
   import { categoryTypesColor } from "$lib/colors.js";
   import { onMount } from "svelte";
   import chartjs from "chart.js/auto";
+  import { base } from "$app/paths";
 
   // variables pour le dashboard
 
@@ -432,6 +433,7 @@
         let totalWidth = 0;
         let totalX = 0;
         let totalBase = 0;
+        let previousY = 0;
         chart.data.datasets.forEach((_, datasetIndex) => {
           // Récupérer les métadonnées du dataset
           const meta = chart.getDatasetMeta(datasetIndex);
@@ -441,7 +443,11 @@
             // Réduction de la largeur du fond
             const reduction = Math.max(width * 0.2, 10); // Réduction en pixels
             const innerWidth = width - reduction;
-            const previousY = y;
+            if (datasetIndex === 1) {
+              previousY = y - reduction / 2;
+            } else {
+              previousY = y + reduction / 2;
+            }
             let innerHeight = Math.max(0, base - previousY - reduction / 2);
             if (datasetIndex >= 1) {
               totalY = Math.min(totalY, y);
@@ -464,7 +470,7 @@
             // Couleur de fond
             ctx.fillRect(
               x - innerWidth / 2, // Position horizontale ajustée
-              previousY + reduction / 2, // Position verticale
+              previousY, // Position verticale
               innerWidth, // Largeur réduite
               innerHeight, // Hauteur de la barre
             );
