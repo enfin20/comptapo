@@ -444,7 +444,7 @@
 
               // Dessiner manuellement le fond avec une largeur réduite
               ctx.save();
-              ctx.fillStyle = categoryTypesColor[8]; // Couleur de fond
+              ctx.fillStyle = categoryTypesColor[9]; // Couleur de fond
               ctx.fillRect(
                 x - innerWidth / 2, // Position horizontale ajustée
                 previousY + reduction / 2, // Position verticale
@@ -585,11 +585,13 @@
           barThickness: false,
         },
         scales: {
+          x: { grid: { display: false } },
           y: {
             beginAtZero: true,
             ticks: {
               display: false, // Masque les valeurs des ticks
             },
+            grid: { display: false },
           },
         },
       },
@@ -746,17 +748,20 @@
       options: {
         responsive: true,
         scales: {
+          x: { grid: { display: false } },
           y: {
             beginAtZero: true,
             ticks: {
               display: false, // Masque les valeurs des ticks
             },
+            grid: { display: false },
           },
           yline: {
             position: "right",
             ticks: {
               display: false, // Masque les valeurs des ticks
             },
+            grid: { display: false },
           },
         },
         plugins: {
