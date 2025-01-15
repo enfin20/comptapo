@@ -434,6 +434,7 @@
         let totalX = 0;
         let totalBase = 0;
         let previousY = 0;
+        let innerHeight = 0;
         chart.data.datasets.forEach((_, datasetIndex) => {
           // Récupérer les métadonnées du dataset
           const meta = chart.getDatasetMeta(datasetIndex);
@@ -443,12 +444,9 @@
             // Réduction de la largeur du fond
             const reduction = Math.max(width * 0.2, 10); // Réduction en pixels
             const innerWidth = width - reduction;
-            if (datasetIndex === 1) {
-              previousY = y - reduction / 2;
-            } else {
-              previousY = y + reduction / 2;
-            }
-            let innerHeight = Math.max(0, base - previousY - reduction / 2);
+            previousY = datasetIndex === 1 ? y + reduction / 2 : y + reduction / 2;
+            innerHeight =
+              datasetIndex != 2 ? Math.max(0, base - previousY) : Math.max(0, base - previousY + reduction / 2);
             if (datasetIndex >= 1) {
               totalY = Math.min(totalY, y);
               totalX = x;
@@ -458,16 +456,14 @@
 
             // Dessiner manuellement le fond avec une largeur réduite
             ctx.save();
-            if (datasetIndex === 0) {
-              ctx.fillStyle = categoryTypesColor[1];
-            } else if (datasetIndex === 1) {
-              ctx.fillStyle = categoryTypesColor[4];
-            } else {
-              ctx.fillStyle = categoryTypesColor[9];
-            } // Couleur de fond
-
-            //           ctx.fillStyle = datasetIndex === 0 ? categoryTypesColor[1] : categoryTypesColor[9];
+            ctx.fillStyle =
+              datasetIndex === 0
+                ? categoryTypesColor[1]
+                : datasetIndex === 1
+                ? categoryTypesColor[4]
+                : categoryTypesColor[9];
             // Couleur de fond
+
             ctx.fillRect(
               x - innerWidth / 2, // Position horizontale ajustée
               previousY, // Position verticale
