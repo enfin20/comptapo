@@ -424,10 +424,77 @@
     // Register the plugin
     chartjs.register(barThickness);
 
+    const MonthPerso = {
+      id: "MonthPerso",
+      beforeDatasetsDraw(chart) {
+        const { ctx } = chart;
+        let totalY = 999;
+        let totalWidth = 0;
+        let totalX = 0;
+        let totalBase = 0;
+        chart.data.datasets.forEach((_, datasetIndex) => {
+          // Récupérer les métadonnées du dataset
+          const meta = chart.getDatasetMeta(datasetIndex);
+
+          meta.data.forEach((bar) => {
+            const { x, y, base, width } = bar;
+            // Réduction de la largeur du fond
+            const reduction = Math.max(width * 0.2, 10); // Réduction en pixels
+            const innerWidth = width - reduction;
+            const previousY = y;
+            let innerHeight = Math.max(0, base - previousY - reduction / 2);
+            if (datasetIndex >= 1) {
+              totalY = Math.min(totalY, y);
+              totalX = x;
+              totalWidth = width;
+              totalBase = Math.max(totalBase, base);
+            }
+
+            // Dessiner manuellement le fond avec une largeur réduite
+            ctx.save();
+            if (datasetIndex === 0) {
+              ctx.fillStyle = categoryTypesColor[1];
+            } else if (datasetIndex === 1) {
+              ctx.fillStyle = categoryTypesColor[4];
+            } else {
+              ctx.fillStyle = categoryTypesColor[9];
+            } // Couleur de fond
+
+            //           ctx.fillStyle = datasetIndex === 0 ? categoryTypesColor[1] : categoryTypesColor[9];
+            // Couleur de fond
+            ctx.fillRect(
+              x - innerWidth / 2, // Position horizontale ajustée
+              previousY + reduction / 2, // Position verticale
+              innerWidth, // Largeur réduite
+              innerHeight, // Hauteur de la barre
+            );
+
+            ctx.restore();
+          });
+        });
+        ctx.save();
+        ctx.strokeStyle = categoryTypesColor[7]; // Couleur de la bordure
+        ctx.lineWidth = borderFactor; // Épaisseur de la bordure
+        ctx.beginPath();
+        ctx.moveTo(totalX - totalWidth / 2 + 5, totalY); // Position horizontale ajustée avec angle arrondi
+        ctx.lineTo(totalX + totalWidth / 2 - 5, totalY); // Ligne du haut avec angle arrondi
+        ctx.quadraticCurveTo(totalX + totalWidth / 2, totalY, totalX + totalWidth / 2, totalY + 5); // Angle arrondi en haut à droite
+        ctx.lineTo(totalX + totalWidth / 2, totalBase - 5); // Ligne droite
+        ctx.quadraticCurveTo(totalX + totalWidth / 2, totalBase, totalX + totalWidth / 2 - 5, totalBase); // Angle arrondi en bas à droite
+        ctx.lineTo(totalX - totalWidth / 2 + 5, totalBase); // Ligne du bas avec angle arrondi
+        ctx.quadraticCurveTo(totalX - totalWidth / 2, totalBase, totalX - totalWidth / 2, totalBase - 5); // Angle arrondi en bas à gauche
+        ctx.lineTo(totalX - totalWidth / 2, totalY + 5); // Ligne gauche
+        ctx.quadraticCurveTo(totalX - totalWidth / 2, totalY, totalX - totalWidth / 2 + 5, totalY); // Angle arrondi en haut à gauche
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+      },
+    };
+    // Register the plugin
+    chartjs.register(MonthPerso);
+
     const MonthOpfd = {
       id: "MonthOpfd",
-      //       console.log("MonthOpfd 0", chart.getDatasetMeta(0).data[0]);
-      //        console.log("MonthOpfd 1", chart.getDatasetMeta(1).data[0]);
       beforeDatasetsDraw(chart) {
         const { ctx } = chart;
 
@@ -530,6 +597,7 @@
           narrowBackground: false,
           barThickness: true,
           MonthOpfd: false,
+          MonthPerso: false,
         },
         barPercentage: 1,
         categoryPercentage: 1,
@@ -568,6 +636,7 @@
           narrowBackground: false,
           barThickness: true,
           MonthOpfd: false,
+          MonthPerso: false,
         },
         barPercentage: 1,
         categoryPercentage: 1,
@@ -623,6 +692,7 @@
           },
           barThickness: false,
           MonthOpfd: false,
+          MonthPerso: false,
         },
         scales: {
           x: { grid: { display: false } },
@@ -646,18 +716,23 @@
           {
             label: "Dépenses",
             data: [totalPersoExpensesCurrentMonth],
-            backgroundColor: categoryTypesColor[1], // Border color
+            backgroundColor: "rgba(255, 255, 255, 0)",
+            borderColor: categoryTypesColor[7], // Border color
+            borderWidth: borderFactor, // Border thickness
+            borderRadius: 5, // Optional: Makes corners rounded
+            borderSkipped: false, // Ensures the border is drawn on all sides
           },
           {
             label: banks[1].name,
-            data: [banks[1].amount],
-            backgroundColor: categoryTypesColor[4],
+            data: [3000], //[banks[1].amount],
+            backgroundColor: "rgba(255, 255, 255, 0)",
             stack: "cumulative",
           },
           {
             label: banks[2].name,
-            data: [banks[2].amount],
-            backgroundColor: categoryTypesColor[9], // Border color
+            data: [1200], //[banks[2].amount],
+            backgroundColor: "rgba(255, 255, 255, 0)",
+            borderColor: categoryTypesColor[7], // Border color
             stack: "cumulative",
           },
         ],
@@ -679,6 +754,7 @@
           narrowBackground: false,
           barThickness: false,
           MonthOpfd: false,
+          MonthPerso: true,
         },
       },
     });
@@ -691,7 +767,7 @@
         datasets: [
           {
             label: "Dépenses",
-            data: [140000], //[totalOpfdExpensesCurrentMonth],
+            data: [totalOpfdExpensesCurrentMonth],
             backgroundColor: "rgba(255, 255, 255, 0)",
             borderColor: categoryTypesColor[7], // Border color
             borderWidth: borderFactor, // Border thickness
@@ -726,6 +802,7 @@
           narrowBackground: false,
           barThickness: false,
           MonthOpfd: true,
+          MonthPerso: false,
         },
       },
     });
@@ -821,6 +898,7 @@
           narrowBackground: true,
           barThickness: false,
           MonthOpfd: false,
+          MonthPerso: false,
         },
       },
     });
