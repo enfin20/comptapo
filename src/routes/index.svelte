@@ -474,7 +474,8 @@
         });
         ctx.save();
         ctx.strokeStyle = categoryTypesColor[7]; // Couleur de la bordure
-        ctx.lineWidth = borderFactor; // Épaisseur de la bordure
+        ctx.lineWidth = borderFactor;
+        totalBase -= borderFactor / 2; // Épaisseur de la bordure
         ctx.beginPath();
         ctx.moveTo(totalX - totalWidth / 2 + 5, totalY); // Position horizontale ajustée avec angle arrondi
         ctx.lineTo(totalX + totalWidth / 2 - 5, totalY); // Ligne du haut avec angle arrondi
@@ -724,13 +725,13 @@
           },
           {
             label: banks[1].name,
-            data: [3000], //[banks[1].amount],
+            data: [banks[1].amount],
             backgroundColor: "rgba(255, 255, 255, 0)",
             stack: "cumulative",
           },
           {
             label: banks[2].name,
-            data: [1200], //[banks[2].amount],
+            data: [banks[2].amount],
             backgroundColor: "rgba(255, 255, 255, 0)",
             borderColor: categoryTypesColor[7], // Border color
             stack: "cumulative",
