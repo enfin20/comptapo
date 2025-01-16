@@ -33,6 +33,10 @@
   let ctxMonthOpfd = null;
   var chartMonthOpfdData = null;
 
+  let chartMonthExpenses = null;
+  let ctxMonthExpenses = null;
+  var chartMonthExpensesData = null;
+
   let dates = [""];
 
   let banks = [];
@@ -48,6 +52,8 @@
   let currentCaObjective = 0;
 
   let persoExpenses = [];
+  let persoExpensesMonth = [];
+  let persoExpensesMonthLabel = [];
 
   let OpfdExpenses = [];
 
@@ -109,6 +115,9 @@
 
     ctxMonthOpfd = chartMonthOpfd.getContext("2d");
     chartMonthOpfdData = new chartjs(ctxMonthOpfd, {});
+
+    ctxMonthExpenses = chartMonthExpenses.getContext("2d");
+    chartMonthExpensesData = new chartjs(ctxMonthExpenses, {});
   }
 
   async function loadTables() {
@@ -199,6 +208,10 @@
         for (var k = 0; k < persoExpenses.length; k++) {
           if (persoExpenses[k].year === i && persoExpenses[k].month === j + 1) {
             tempTotalPersoExpenses = tempTotalPersoExpenses + persoExpenses[k].amount;
+            if (i === currentYear && j === currentMonth) {
+              persoExpensesMonth.push(persoExpenses[k].amount);
+              persoExpensesMonthLabel.push(persoExpenses[k].category);
+            }
           }
         }
 
@@ -810,6 +823,43 @@
       },
     });
 
+    chartMonthExpensesData.destroy();
+    chartMonthExpensesData = new chartjs(ctxMonthExpenses, {
+      type: "bar",
+      data: {
+        labels: persoExpensesMonthLabel,
+        datasets: [
+          {
+            data: persoExpensesMonth,
+            backgroundColor: "rgba(255, 255, 255, 0)",
+            borderColor: categoryTypesColor[7], // Border color
+            borderWidth: borderFactor, // Border thickness
+            borderRadius: 5, // Optional: Makes corners rounded
+            borderSkipped: false, // Ensures the border is drawn on all sides
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            display: false, // Masque les valeurs des ticks
+          },
+          y: {
+            display: false, // Masque les valeurs des ticks
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          narrowBackground: false,
+          barThickness: false,
+          MonthOpfd: true,
+          MonthPerso: false,
+        },
+      },
+    });
     chartSalariesData.destroy();
     chartSalariesData = new chartjs(ctxSalaries, {
       type: "bar",
@@ -913,18 +963,22 @@
     <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
       <canvas bind:this={chartMonthPerso} height="50px" />
       <div class="text-center">
-        <p class={cssNeg}><b>Solde cash</b></p>
+        <p class={cssNeg}><b>Perso cash</b></p>
         <p class={cssNeg}><b>{soldeCash.toLocaleString("fr")}</b></p>
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
-      <p>&nbsp;</p>
-    </div>
+
     <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-4 font-normal">
       <canvas bind:this={chartMonthOpfd} height="50px" />
       <div class="text-center">
-        <p class={cssOpfdNeg}><b>Solde cash</b></p>
+        <p class={cssOpfdNeg}><b>Opfd cash</b></p>
         <p class={cssOpfdNeg}><b>{soldeOpfd.toLocaleString("fr")}</b></p>
+      </div>
+      <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-4 font-normal">
+        <canvas bind:this={chartMonthExpenses} height="50px" />
+      </div>
+      <div class="text-center">
+        <p><b>Détail dépenses</b></p>
       </div>
     </div>
   </div>
