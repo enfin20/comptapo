@@ -961,7 +961,7 @@
 <div class="grid grid-cols-1 md:grid-cols-4 w-full">
   <div class="border-solid hover:border-dotted border-2 rounded mr-1 mt-1">
     <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-1 font-normal">
-      <canvas bind:this={chartMonthPerso} height="50px" />
+      <canvas bind:this={chartMonthPerso} height="60px" />
       <div class="text-center">
         <p class={cssNeg}><b>Perso cash</b></p>
         <p class={cssNeg}><b>{soldeCash.toLocaleString("fr")}</b></p>
@@ -969,13 +969,13 @@
     </div>
 
     <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-4 font-normal">
-      <canvas bind:this={chartMonthOpfd} height="50px" />
+      <canvas bind:this={chartMonthOpfd} height="60px" />
       <div class="text-center">
         <p class={cssOpfdNeg}><b>Opfd cash</b></p>
         <p class={cssOpfdNeg}><b>{soldeOpfd.toLocaleString("fr")}</b></p>
       </div>
       <div class="grid grid-cols-2 gap-1 md:gap-4 w-full mr-1 mt-4 font-normal">
-        <canvas bind:this={chartMonthExpenses} height="50px" />
+        <canvas bind:this={chartMonthExpenses} height="60px" />
       </div>
       <div class="text-center">
         <p><b>Détail dépenses</b></p>
