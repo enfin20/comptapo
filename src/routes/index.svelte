@@ -581,6 +581,7 @@
     // Register the plugin
     chartjs.register(narrowBackgroundPlugin);
 
+    const maxValueIR = Math.max(...datasetIrObjective.map((ds) => Math.max(...ds.data)));
     chartIrObjectiveData.destroy();
     chartIrObjectiveData = new chartjs(ctxIrObjective, {
       type: "bar",
@@ -597,8 +598,8 @@
             display: false,
             ticks: {
               min: 0,
-              max: 130,
-              stepSize: 10,
+              max: maxValueIR,
+              stepSize: maxValueIR / 10,
             },
           },
           y: {
@@ -620,6 +621,7 @@
       },
     });
 
+    const maxValueCA = Math.max(...datasetCaObjective.map((ds) => Math.max(...ds.data)));
     chartCaObjectiveData.destroy();
     chartCaObjectiveData = new chartjs(ctxCaObjective, {
       type: "bar",
@@ -636,8 +638,8 @@
             display: false,
             ticks: {
               min: 0,
-              max: 130,
-              stepSize: 10,
+              max: maxValueCA,
+              stepSize: maxValueCA / 10,
             },
           },
           y: {
